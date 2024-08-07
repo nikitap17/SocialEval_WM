@@ -1,0 +1,5 @@
+"0","outliers_rt <- read_csv(""Data/clean_data/Outliers_RT.csv"", show_col_types = FALSE)"
+"0","outliers_rt <- sapply(outliers_rt$ID,as.character)"
+"0",""
+"0","outliers_errors <- read_csv(""Data/clean_data/Outliers_errors.csv"", show_col_types = FALSE)"
+"0","outliers_errors<- sapply(outliers_errors$ID,as.character)"

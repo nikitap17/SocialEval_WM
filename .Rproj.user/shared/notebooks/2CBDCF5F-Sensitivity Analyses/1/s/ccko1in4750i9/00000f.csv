@@ -1,0 +1,17 @@
+"0","main_df <- read_csv(""Data/clean_data/main_df.csv"", show_col_types = FALSE)"
+"0","main_df$ID <- factor(main_df$ID)"
+"0","main_df$Stress <- factor(main_df$Stress)"
+"2","Warnung: Unknown or uninitialised column: `Stress`."
+"1","[1m[33mError[39m in `$<-`:[22m
+[38;5;250m[33m![38;5;250m Assigned data `factor(main_df$Stress)` must be compatible with existing data.
+[31m✖[38;5;250m Existing data has 1032 rows.
+[31m✖[38;5;250m Assigned data has 0 rows.
+[36mℹ[38;5;250m Only vectors of size 1 are recycled.[39m
+[1mCaused by error in `vectbl_recycle_rhs_rows()`:[22m
+[33m![39m Can't recycle input of size 0 to size 1032.
+Backtrace:
+[90m 1. [39m[1mbase[22m::`$<-`(`*tmp*`, Stress, value = `<fct>`)
+[90m 2. [39m[1mtibble[22m:::`$<-.tbl_df`(`*tmp*`, Stress, value = `<fct>`)
+[90m 3. [39mtibble:::tbl_subassign(...)
+[90m 4. [39m[1m[94mtibble:::vectbl_recycle_rhs_rows([39m[22mvalue, fast_nrow(xo), i_arg = NULL, value_arg, call[1m[94m)[39m[22m
+"

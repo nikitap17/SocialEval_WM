@@ -1,0 +1,53 @@
+StartDate,EndDate,Status,Progress,Duration (in seconds),Finished,RecordedDate,ResponseId,DistributionChannel,UserLanguage,Q13,Q1,Q3,Q4,Q5,Q6,Q7,Q9,Q8,Q10,Q11,Q12,Q12
+Start Date,End Date,Response Type,Progress,Duration (in seconds),Finished,Recorded Date,Response ID,Distribution Channel,User Language,"Please provide your ID by pressing [Strg] + [v] in the text field below.
+ID:",Please specify your age in years.,Please specify your sex.,Please specify your gender.,Please specify your study programme(s) (e.g. Bachelor Psychology).,Are you taking any medication at the moment?,"Could you provide the brand name(s) or the active ingredient (""Wirkstoff"") of the medication?",Have you consumed any of the following things 1 hour before the study?,Have you consumed any alcohol or drugs yesterday?,How well did you sleep last night?,Did you know any of the evaluators?,"How often have you encountered the n-back or similar working memory tasks (e.g., dual n-back) in the past?",How clear were the English questionnaires to you?
+"{""ImportId"":""startDate"",""timeZone"":""Europe/Berlin""}","{""ImportId"":""endDate"",""timeZone"":""Europe/Berlin""}","{""ImportId"":""status""}","{""ImportId"":""progress""}","{""ImportId"":""duration""}","{""ImportId"":""finished""}","{""ImportId"":""recordedDate"",""timeZone"":""Europe/Berlin""}","{""ImportId"":""_recordId""}","{""ImportId"":""distributionChannel""}","{""ImportId"":""userLanguage""}","{""ImportId"":""QID14_TEXT""}","{""ImportId"":""QID1_TEXT""}","{""ImportId"":""QID3""}","{""ImportId"":""QID4""}","{""ImportId"":""QID5_TEXT""}","{""ImportId"":""QID6""}","{""ImportId"":""QID7_TEXT""}","{""ImportId"":""QID9""}","{""ImportId"":""QID8""}","{""ImportId"":""QID10""}","{""ImportId"":""QID11""}","{""ImportId"":""QID12""}","{""ImportId"":""QID13""}"
+2023-12-13 10:03:20,2023-12-13 10:04:49,0,100,88,1,2023-12-13 10:04:50,R_3DiKIMiBFcE5upC,anonymous,EN,855301,20,2,2,Bachelor Psychology,1,,4,2,2,1,1,4
+2023-12-13 13:04:03,2023-12-13 13:05:18,0,100,75,1,2023-12-13 13:05:19,R_22Y18JjJ2WvI8g4,anonymous,EN,247411,21,2,2,Bachelor Psychology,1,,4,2,2,1,1,5
+2023-12-14 09:51:35,2023-12-14 09:52:27,0,100,52,1,2023-12-14 09:52:28,R_6IYHQdrDX9NFZ9W,anonymous,EN,465058,26,2,2,Bachelor Psychology,1,,1,2,2,1,1,5
+2023-12-14 12:46:44,2023-12-14 12:47:58,0,100,73,1,2023-12-14 12:47:59,R_3IoorE9QZG2aRx5,anonymous,EN,995402,22,1,1,Bachelor Psychology,1,,4,1,3,1,1,5
+2023-12-14 15:51:34,2023-12-14 15:53:13,0,100,98,1,2023-12-14 15:53:14,R_2BDtGsC49dnhljb,anonymous,EN,993902,20,1,1,Bachelor Psychology,2,Antihistamin / Desloratadin,4,2,3,1,2,5
+2023-12-14 17:28:10,2023-12-14 17:29:22,0,100,71,1,2023-12-14 17:29:22,R_8RNs8Pi7Kc48WJP,anonymous,EN,819642,23,2,2,Master Psychology,1,,4,2,4,1,1,5
+2023-12-18 09:50:34,2023-12-18 09:51:44,0,100,69,1,2023-12-18 09:51:44,R_2uUUqqJJTSCpQDD,anonymous,EN,792672,21,2,2,Bachelor Psychology,1,,4,2,4,1,2,5
+2023-12-18 11:25:29,2023-12-18 11:26:41,0,100,71,1,2023-12-18 11:26:42,R_7fjWJqi7AOGPasZ,anonymous,EN,121650,20,2,2,Bachelor Psychology,1,,4,2,2,1,1,5
+2023-12-18 12:52:36,2023-12-18 12:53:38,0,100,61,1,2023-12-18 12:53:38,R_1ImMcBSdSCPqCdz,anonymous,EN,380897,21,2,2,Bachelor Psychologie,1,,4,2,4,1,1,5
+2023-12-18 17:25:37,2023-12-18 17:26:39,0,100,62,1,2023-12-18 17:26:40,R_6HBImq8xWtCAJgV,anonymous,EN,588210,32,1,1,Master Psychology,1,,4,2,2,1,1,4
+2023-12-20 09:56:16,2023-12-20 09:57:23,0,100,67,1,2023-12-20 09:57:24,R_68XaXQi5CxNQZpL,anonymous,EN,977604,20,2,2,Bachlelor Psychology,1,,4,2,4,1,1,5
+2023-12-20 12:53:39,2023-12-20 12:54:51,0,100,72,1,2023-12-20 12:54:52,R_89GvcA3OFpjCokF,anonymous,EN,93756,22,1,1,bachelor Psychology,1,,4,1,4,1,1,5
+2023-12-20 15:55:21,2023-12-20 15:56:44,0,100,83,1,2023-12-20 15:56:45,R_12Qcz4W8AJrMJ3B,anonymous,EN,069369,23,1,1,Master Psychology,1,,4,1,2,1,1,5
+2023-12-20 17:19:40,2023-12-20 17:20:35,0,100,54,1,2023-12-20 17:20:35,R_8C11xXbzFw4aZk5,anonymous,EN,234510,20,2,2,Bachelor Psychology,1,,2,2,4,1,1,4
+2023-12-21 12:56:01,2023-12-21 12:57:22,0,100,80,1,2023-12-21 12:57:23,R_27RN9t39Wtt129z,anonymous,EN,425829,24,2,2,Masters Psychology,2,Pille (Midane),4,2,4,1,1,5
+2023-12-21 15:47:52,2023-12-21 15:48:43,0,100,50,1,2023-12-21 15:48:44,R_2qVvzfHmyjeH0HW,anonymous,EN,765713,28,1,1,Master Psychology,1,,4,1,4,1,1,5
+2024-01-11 15:39:30,2024-01-11 15:40:33,0,100,63,1,2024-01-11 15:40:34,R_4JymDA24lLSqGop,anonymous,EN,179038,19,2,2,Bachelor Psychology,1,,4,2,3,1,1,5
+2024-01-15 10:22:53,2024-01-15 10:24:20,0,100,86,1,2024-01-15 10:24:20,R_31aV18uxKj07P4s,anonymous,EN,095172,20,2,2,Bachelor Psychology,1,,4,2,2,1,1,5
+2024-01-15 11:38:45,2024-01-15 11:39:40,0,100,54,1,2024-01-15 11:39:41,R_6nCXSBkFoNEGRR6,anonymous,EN,648090,19,2,2,Bachelor Psychology,1,,4,2,2,1,1,5
+2024-01-15 14:19:14,2024-01-15 14:20:33,0,100,79,1,2024-01-15 14:20:34,R_6RkpM16tqiqWBFc,anonymous,EN,465464,18,2,2,"Bachelor Psychology, Bachelor Linguistics",1,,4,2,4,1,1,5
+2024-01-17 10:15:49,2024-01-17 10:16:41,0,100,51,1,2024-01-17 10:16:42,R_32w1fknu1TXgcjD,anonymous,EN,848371,19,2,2,Bachelor Psychology,1,,4,2,4,1,1,5
+2024-01-18 14:26:50,2024-01-18 14:28:35,0,100,104,1,2024-01-18 14:28:36,R_6R3tkgxhjr69kQC,anonymous,EN,905693,19,2,2,Bachelor Psychology,1,,4,2,2,1,1,5
+2024-01-18 15:49:11,2024-01-18 15:50:15,0,100,63,1,2024-01-18 15:50:16,R_3SimxWTKsK2A70B,anonymous,EN,511327,22,2,2,Bachelor Psychology,1,,3,2,4,1,1,5
+2024-01-22 10:20:30,2024-01-22 10:21:25,0,100,54,1,2024-01-22 10:21:26,R_3cqFf3THkNeF316,anonymous,EN,957176,19,2,2,Bachelor Psychology,1,,4,2,4,1,1,4
+2024-01-22 14:20:54,2024-01-22 14:21:54,0,100,59,1,2024-01-22 14:21:55,R_7ifgWbiSNiIff3q,anonymous,EN,727655,19,2,2,Bachelor Psychology,1,,4,2,4,1,1,5
+2024-01-24 11:41:03,2024-01-24 11:43:01,0,100,118,1,2024-01-24 11:43:02,R_2rwmuKqgjvndijr,anonymous,EN,153432,21,2,2,Bachelor Psychology,2,"Metrissa, Sargoten (Migränemedikament)",4,2,3,1,1,5
+2024-01-24 14:22:48,2024-01-24 14:24:17,0,100,89,1,2024-01-24 14:24:18,R_1kCeSUA2N2J3gs4,anonymous,EN,082208,24,2,2,Bachelor Psychology,1,,4,2,4,1,1,5
+2024-01-25 11:44:38,2024-01-25 11:46:16,0,100,97,1,2024-01-25 11:46:17,R_6lh2helrBBuohhW,anonymous,EN,620017,28,2,2,Bachelor Psychology,1,,4,2,2,2,1,5
+2024-01-29 10:16:21,2024-01-29 10:17:49,0,100,87,1,2024-01-29 10:17:50,R_1QJJnSJCPEWDgCM,anonymous,EN,236546,19,2,2,Bachelor Psychology,2,Antibabypille Sally Gynial,4,2,4,1,1,5
+2024-01-29 15:39:26,2024-01-29 15:40:51,0,100,84,1,2024-01-29 15:40:52,R_2AesG2DARKBPjoJ,anonymous,EN,894278,20,2,2,Bachelor psychology,1,,3,2,4,1,1,4
+2024-01-31 10:20:25,2024-01-31 10:21:31,0,100,65,1,2024-01-31 10:21:32,R_8v1SBb0iUNfRIgZ,anonymous,EN,017709,23,1,1,Psychology,1,,4,2,5,1,1,5
+2024-01-31 11:39:38,2024-01-31 11:40:39,0,100,60,1,2024-01-31 11:40:39,R_3OreGYeqAMtTIxv,anonymous,EN,908702,19,2,2,Bachelor Psychology,1,,4,2,4,1,1,4
+2024-01-31 14:25:45,2024-01-31 14:26:41,0,100,55,1,2024-01-31 14:26:42,R_7HWeo1Ss6bzlXRn,anonymous,EN,837706,20,2,2,Bachelor Psychology,1,,4,2,3,1,1,5
+2024-01-31 15:41:57,2024-01-31 15:44:00,0,100,122,1,2024-01-31 15:44:02,R_2TJX1j3HSR2QMg1,anonymous,EN,007410,18,2,2,Bachelor Psychology,2,Balanca (=Brand),4,2,4,1,1,4
+2024-02-01 10:24:08,2024-02-01 10:25:22,0,100,74,1,2024-02-01 10:25:23,R_72LXSSgae9xhZls,anonymous,EN,990692,20,2,2,Bachelor Psychology,1,,4,2,4,1,1,5
+2024-02-01 11:40:20,2024-02-01 11:41:43,0,100,83,1,2024-02-01 11:41:44,R_2xygU8bTF5WG63T,anonymous,EN,040122,21,2,2,Bachelor Psychology,1,,1,1,3,1,2,4
+2024-02-01 15:42:47,2024-02-01 15:43:46,0,100,58,1,2024-02-01 15:43:47,R_2sTgTeQDEhAlkFq,anonymous,EN,695008,22,2,2,"Bachelor Psychology ",1,,4,2,4,1,1,5
+2024-02-02 14:24:37,2024-02-02 14:25:43,0,100,65,1,2024-02-02 14:25:43,R_7sbE1TrYlOHgUnG,anonymous,EN,729105,19,2,2,Bachelor Psychology,1,,4,2,3,1,1,5
+2024-02-02 15:35:16,2024-02-02 15:36:10,0,100,53,1,2024-02-02 15:36:10,R_2nME41KGESrfVKi,anonymous,EN,336869,23,2,2,Bachelor Psychology,2,Fluoxetin,4,2,3,1,1,5
+2024-02-05 10:17:22,2024-02-05 10:18:27,0,100,64,1,2024-02-05 10:18:28,R_21aSMJ7PRvKA0cY,anonymous,EN,878863,20,2,2,Bachelor Psychology,1,,4,2,2,1,2,5
+2024-02-05 11:37:45,2024-02-05 11:39:06,0,100,81,1,2024-02-05 11:39:07,R_3iiqwNUhMBJuUwx,anonymous,EN,719844,26,2,3,"Bachelor Psychology, Bachelor civil engineering",2,Atomoxetin,4,2,4,1,1,5
+2024-02-05 15:44:55,2024-02-05 15:46:22,0,100,86,1,2024-02-05 15:46:23,R_4IPZwf2LafZhjU4,anonymous,EN,785962,19,2,2,Bachelor Psychology,1,,4,2,4,1,1,5
+2024-02-06 14:20:49,2024-02-06 14:21:54,0,100,64,1,2024-02-06 14:21:55,R_4KQOFsALcfeU2bf,anonymous,EN,246614,19,2,2,"Bachelor Psychology ",1,,4,2,4,1,1,5
+2024-02-06 15:41:32,2024-02-06 15:42:43,0,100,71,1,2024-02-06 15:42:44,R_1O6PCF0pgWHzEAo,anonymous,EN,491926,22,2,2,Bachelor Psychology,1,,4,2,5,1,1,5
+2024-02-07 14:19:52,2024-02-07 14:21:49,0,100,116,1,2024-02-07 14:21:50,R_3PZjIqbzbnjkQWN,anonymous,EN,047751,20,2,2,Bachelor Psychology,2,evaluna,4,2,2,1,1,5
+2024-02-07 15:39:28,2024-02-07 15:40:49,0,100,81,1,2024-02-07 15:40:49,R_27wbjeFhKHmG0Qp,anonymous,EN,094065,19,2,2,Bachelor Psychology,1,,4,1,4,1,2,4
+2024-02-08 10:33:19,2024-02-08 10:35:18,0,100,118,1,2024-02-08 10:35:18,R_2sJP7wpj0NkXamZ,anonymous,EN,040710,21,2,2,"Bachelor Psychology ",1,,4,1,4,1,1,4
+2024-02-08 11:46:26,2024-02-08 11:48:17,0,100,110,1,2024-02-08 11:48:17,R_3pJrMF2xK82vElU,anonymous,EN,440557,23,2,2,Bachelor Psychology,2,Seractil,4,1,3,1,1,5
+2024-02-08 15:37:56,2024-02-08 15:39:24,0,100,88,1,2024-02-08 15:39:25,R_2Mh2vA6QEhIdJiV,anonymous,EN,017824,23,2,2,Bachelor Psychology,2,Meliane mite Bayer,4,2,5,1,1,5

@@ -1,0 +1,185 @@
+"0","if(!require(""groundhog"", quietly = T)){"
+"0","    install.packages(""groundhog"")"
+"0","}"
+"2","Warnung: Paket ‘groundhog’ wurde unter R Version 4.3.3 erstellt"
+"2","Attached: 'Groundhog' (Version: 3.2.0)
+"
+"2","Tips and troubleshooting: https://groundhogR.com
+"
+"0","library(groundhog)"
+"0",""
+"0","pkgs <- c(""tidyverse"","
+"0","          ""ggpubr"","
+"0","          ""lme4"","
+"0","          ""lmerTest"","
+"0","          ""rstatix"","
+"0","          ""BayesFactor"","
+"0","          ""car"","
+"0","          ""emmeans"","
+"0","          ""modelbased"","
+"0","          ""rempsyc"","
+"0","          ""effectsize"","
+"0","          ""flextable"","
+"0","          ""parameters"")"
+"0",""
+"0","date = ""2024-01-01"" # year-month-day"
+"0","groundhog.library(pkgs,date)"
+"2","Warnung: Paket ‘tidyverse’ wurde unter R Version 4.3.3 erstellt"
+"2","Warnung: Paket ‘ggplot2’ wurde unter R Version 4.3.2 erstellt"
+"2","Warnung: Paket ‘tibble’ wurde unter R Version 4.3.3 erstellt"
+"2","Warnung: Paket ‘tidyr’ wurde unter R Version 4.3.1 erstellt"
+"2","Warnung: Paket ‘readr’ wurde unter R Version 4.3.1 erstellt"
+"2","Warnung: Paket ‘purrr’ wurde unter R Version 4.3.3 erstellt"
+"2","Warnung: Paket ‘dplyr’ wurde unter R Version 4.3.3 erstellt"
+"2","Warnung: Paket ‘stringr’ wurde unter R Version 4.3.3 erstellt"
+"2","Warnung: Paket ‘forcats’ wurde unter R Version 4.3.3 erstellt"
+"2","Warnung: Paket ‘lubridate’ wurde unter R Version 4.3.3 erstellt"
+"2","── [1mAttaching core tidyverse packages[22m ────────────────────────────────────────────────── tidyverse 2.0.0 ──
+[32m✔[39m [34mdplyr    [39m 1.1.4     [32m✔[39m [34mreadr    [39m 2.1.4
+[32m✔[39m [34mforcats  [39m 1.0.0     [32m✔[39m [34mstringr  [39m 1.5.1
+[32m✔[39m [34mggplot2  [39m 3.4.4     [32m✔[39m [34mtibble   [39m 3.2.1
+[32m✔[39m [34mlubridate[39m 1.9.3     [32m✔[39m [34mtidyr    [39m 1.3.0
+[32m✔[39m [34mpurrr    [39m 1.0.2     "
+"2","── [1mConflicts[22m ──────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
+[31m✖[39m [34mdplyr[39m::[32mfilter()[39m masks [34mstats[39m::filter()
+[31m✖[39m [34mdplyr[39m::[32mlag()[39m    masks [34mstats[39m::lag()
+[36mℹ[39m Use the ]8;;http://conflicted.r-lib.org/conflicted package]8;; to force all conflicts to become errors"
+"2","Warnung: Paket ‘ggpubr’ wurde unter R Version 4.3.3 erstellt"
+"2","Warnung: Paket ‘lme4’ wurde unter R Version 4.3.2 erstellt"
+"2","Lade nötiges Paket: Matrix
+"
+"2","Warnung: Paket ‘Matrix’ wurde unter R Version 4.3.2 erstellt"
+"2","
+Attache Paket: ‘Matrix’
+
+"
+"2","Die folgenden Objekte sind maskiert von ‘package:tidyr’:
+
+    expand, pack, unpack
+
+"
+"2","Warnung: Paket ‘lmerTest’ wurde unter R Version 4.3.3 erstellt"
+"2","
+Attache Paket: ‘lmerTest’
+
+"
+"2","Das folgende Objekt ist maskiert ‘package:lme4’:
+
+    lmer
+
+"
+"2","Das folgende Objekt ist maskiert ‘package:stats’:
+
+    step
+
+"
+"2","Warnung: Paket ‘rstatix’ wurde unter R Version 4.3.3 erstellt"
+"2","
+Attache Paket: ‘rstatix’
+
+"
+"2","Das folgende Objekt ist maskiert ‘package:stats’:
+
+    filter
+
+"
+"2","Warnung: Paket ‘BayesFactor’ wurde unter R Version 4.3.2 erstellt"
+"2","Lade nötiges Paket: coda
+"
+"2","Warnung: Paket ‘coda’ wurde unter R Version 4.3.1 erstellt"
+"2","************
+Welcome to BayesFactor 0.9.12-4.6. If you have questions, please contact Richard Morey (richarddmorey@gmail.com).
+
+Type BFManual() to open the manual.
+************
+"
+"2","Warnung: Paket ‘car’ wurde unter R Version 4.3.3 erstellt"
+"2","Lade nötiges Paket: carData
+"
+"2","Warnung: Paket ‘carData’ wurde unter R Version 4.3.3 erstellt"
+"2","
+Attache Paket: ‘car’
+
+"
+"2","Das folgende Objekt ist maskiert ‘package:dplyr’:
+
+    recode
+
+"
+"2","Das folgende Objekt ist maskiert ‘package:purrr’:
+
+    some
+
+"
+"2","Warnung: Paket ‘emmeans’ wurde unter R Version 4.3.2 erstellt"
+"2","
+Attache Paket: ‘modelbased’
+
+"
+"2","Das folgende Objekt ist maskiert ‘package:rstatix’:
+
+    get_emmeans
+
+"
+"2","Warnung: Paket ‘rempsyc’ wurde unter R Version 4.3.1 erstellt"
+"2","Suggested APA citation: Thériault, R. (2023). rempsyc: Convenience functions for psychology. 
+Journal of Open Source Software, 8(87), 5466. https://doi.org/10.21105/joss.05466
+"
+"2","Warnung: Paket ‘effectsize’ wurde unter R Version 4.3.1 erstellt"
+"2","
+Attache Paket: ‘effectsize’
+
+"
+"2","Die folgenden Objekte sind maskiert von ‘package:rstatix’:
+
+    cohens_d, eta_squared
+
+"
+"2","Warnung: Paket ‘flextable’ wurde unter R Version 4.3.2 erstellt"
+"2","Registered S3 method overwritten by 'data.table':
+  method           from
+  print.data.table     
+"
+"2","
+Attache Paket: ‘flextable’
+
+"
+"2","Die folgenden Objekte sind maskiert von ‘package:ggpubr’:
+
+    border, font, rotate
+
+"
+"2","Das folgende Objekt ist maskiert ‘package:purrr’:
+
+    compose
+
+"
+"2","Warnung: Paket ‘parameters’ wurde unter R Version 4.3.2 erstellt"
+"2","[36mSuccessfully attached 'tidyverse_2.0.0'[0m
+"
+"2","[36mSuccessfully attached 'ggpubr_0.6.0'[0m
+"
+"2","[36mSuccessfully attached 'lme4_1.1-35.1'[0m
+"
+"2","[36mSuccessfully attached 'lmerTest_3.1-3'[0m
+"
+"2","[36mSuccessfully attached 'rstatix_0.7.2'[0m
+"
+"2","[36mSuccessfully attached 'BayesFactor_0.9.12-4.6'[0m
+"
+"2","[36mSuccessfully attached 'car_3.1-2'[0m
+"
+"2","[36mSuccessfully attached 'emmeans_1.9.0'[0m
+"
+"2","[36mSuccessfully attached 'modelbased_0.8.6'[0m
+"
+"2","[36mSuccessfully attached 'rempsyc_0.1.7'[0m
+"
+"2","[36mSuccessfully attached 'effectsize_0.8.6'[0m
+"
+"2","[36mSuccessfully attached 'flextable_0.9.4'[0m
+"
+"2","[36mSuccessfully attached 'parameters_0.21.3'[0m
+"
+"0","options(es.use_symbols = TRUE)"
+"0",""

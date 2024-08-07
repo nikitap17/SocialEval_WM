@@ -1,0 +1,156 @@
+**Import libraries using a reproducible approach**
+
+```{r}
+pkgs <- c("tidyverse",
+          "ggpubr",
+          "lme4",
+          "lmerTest",
+          "rstatix",
+          "car",
+          "modelbased")
+
+lapply(pkgs, library, character.only=TRUE)
+
+
+options(es.use_symbols = TRUE)
+```
+
+### Data Preparation
+
+```{r}
+main_df <- read_csv("Data/clean_data/main_df.csv", show_col_types = FALSE)
+main_df$ID <- factor(main_df$ID)
+main_df$Evaluation <- factor(main_df$Evaluation)
+main_df$CL <- factor(main_df$CL)
+main_df$block <- factor(main_df$block)
+main_df$trial_block <- factor(main_df$trial_block)
+
+agg_df <- read_csv("Data/clean_data/agg_df.csv", show_col_types = FALSE)
+agg_df$ID <- factor(agg_df$ID)
+agg_df$Evaluation <- factor(agg_df$Evaluation)
+agg_df$CL <- factor(agg_df$CL)
+
+experiment_data <- read_csv("Data/clean_data/experiment_data.csv", show_col_types = FALSE)
+experiment_data$ID <- factor(experiment_data$ID)
+experiment_data$Evaluation <- factor(experiment_data$Evaluation)
+experiment_data$CL <- factor(experiment_data$CL)
+experiment_data$block <- factor(experiment_data$block)
+experiment_data$trial_block <- factor(experiment_data$trial_block)
+```
+
+# Sensitivity Analyses
+
+### Three different subsets:
+
+a)  Excluding outliers
+
+```{r}
+outliers_rt <- read_csv("Data/clean_data/Outliers_RT.csv", show_col_types = FALSE)
+outliers_rt <- sapply(outliers_rt$ID,as.character)
+
+outliers_errors <- read_csv("Data/clean_data/Outliers_errors.csv", show_col_types = FALSE)
+outliers_errors<- sapply(outliers_errors$ID,as.character)
+```
+
+b)  Excluding male participants
+
+```{r}
+excl_males <- c("588210","93756","069369","765713","017709")
+```
+
+c)  Excluding participants who failed the manipulation check (i.e., no increase in EDA & distrusting the deception)
+
+```{r}
+excl_mcheck <- c("588210", "40710", "848371")
+```
+
+## Sensitivity Analyses for Reaction Time
+
+### Excluding outliers
+
+```{r}
+agg_df1 <- subset(agg_df,!(ID %in% outliers_rt))
+main_df1 <- subset(main_df, !(ID %in% outliers_rt))
+
+aov <- anova_test(data = agg_df1, RT_Raw ~ CL*Evaluation + Error(ID/(CL+Evaluation)), type =3,
+                  effect.size="pes")
+get_anova_table(aov)
+
+m4 <- lmer(scale(RT_Raw) ~ block + trial_block + CL+Evaluation + (CL+Evaluation|ID),
+           data=main_df1, REML = T)
+summary(m4)
+```
+
+No differences in direction of the effect
+
+### Excluding male participants
+
+```{r}
+agg_df1 <- subset(agg_df,!(ID %in% excl_males))
+main_df1 <- subset(main_df, !(ID %in% excl_males))
+
+aov <- anova_test(data = agg_df1, RT_Raw ~ CL*Evaluation + Error(ID/(CL+Evaluation)), type =3,
+                  effect.size="pes")
+get_anova_table(aov)
+
+m4 <- lmer(scale(RT_Raw) ~ block + trial_block + CL+Evaluation + (CL+Evaluation|ID),
+           data=main_df1, REML = T)
+summary(m4)
+```
+
+No differences in direction of the effect
+
+### Excluding participants who failed the manipulation check
+
+```{r}
+agg_df1 <- subset(agg_df,!(ID %in% excl_mcheck))
+main_df1 <- subset(main_df, !(ID %in% excl_mcheck))
+
+aov <- anova_test(data = agg_df1, RT_Raw ~ CL*Evaluation + Error(ID/(CL+Evaluation)), type =3,
+                  effect.size="pes")
+get_anova_table(aov)
+
+m4 <- lmer(scale(RT_Raw) ~ block + trial_block + CL+Evaluation + (CL+Evaluation|ID),
+           data=main_df1, REML = T)
+summary(m4)
+```
+
+No differences in direction of the effect
+
+## Sensitivity Analyses for errors
+
+### Excluding outliers
+
+```{r}
+experiment_data1 <- subset(experiment_data,!(ID %in% outliers_errors))
+
+m4 <- glmer(Errors ~ block + trial_block + CL + Evaluation + (1|ID),
+           data=experiment_data1, family = binomial)
+summary(m4)
+```
+
+No differences in direction of the effect
+
+### Exclude males
+
+```{r}
+experiment_data1 <- subset(experiment_data,!(ID %in% excl_males))
+
+m4 <- glmer(Errors ~ block + trial_block + CL + Evaluation + (1|ID),
+            data=experiment_data1, family = binomial)
+summary(m4)
+```
+
+No differences in direction of the effect
+
+### Excluding participants who failed the manipulation check
+
+```{r}
+experiment_data1 <- subset(experiment_data,!(ID %in% excl_mcheck))
+
+m4 <- glmer(Errors ~ block + trial_block + CL + Evaluation + (1|ID),
+            data=experiment_data1, family = binomial)
+summary(m4)
+```
+
+No differences in direction of the effect

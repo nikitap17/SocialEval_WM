@@ -1,0 +1,432 @@
+**Import libraries using a reproducible approach**
+
+```{r}
+pkgs <- c("tidyverse",
+          "rempsyc",
+          "flextable",
+          "plyr",
+          "lattice",
+          "tidyverse",
+          "Rmisc",
+          "cowplot",
+          "devtools",
+          "gghalves",
+          "car",
+          "readxl",
+          "patchwork")
+
+lapply(pkgs, library, character.only=TRUE)
+
+```
+
+### Load data
+
+```{r}
+TLX_and_ADES <- read_csv("Data/clean_data/TLX_and_ADES_clean.csv", show_col_types = FALSE)
+PostExp <- read_csv("Data/clean_data/PostExp_clean.csv", show_col_types = FALSE)
+agg_df <- read_csv("Data/clean_data/agg_df.csv", show_col_types = FALSE)
+main_df <- read_csv("Data/clean_data/main_df.csv", show_col_types = FALSE)
+```
+
+## 
+
+# Descriptive Statistics
+
+## Demographics
+
+Sex
+
+```{r}
+paste("N women =", as.numeric(PostExp %>% filter(Sex==2) %>% dplyr::summarise(n())))
+
+paste("N men =", as.numeric(PostExp %>% filter(Sex==1) %>% dplyr::summarise(n())))
+```
+
+Age
+
+```{r}
+PostExp %>%
+  dplyr::summarise(M = mean(Age), SD = sd(Age),
+                   min = min(Age), max = max(Age), n = n()) %>% data.frame()
+
+PostExp %>% select(Age) %>% count() %>%
+  mutate( "%" = round(freq / sum(freq) * 100))
+```
+
+## Working Memory Performance
+
+Errors
+
+```{r}
+descriptives <- agg_df %>% group_by(Evaluation, CL) %>% 
+  dplyr::summarise(M = mean(Errors,na.rm = TRUE), SD = sd(Errors,na.rm = TRUE), n = n()) %>% 
+  mutate(SE = SD / sqrt(n),
+         CI_lower = M - qt(1 - (0.05 / 2), n - 1) * SE,
+         CI_upper = M + qt(1 - (0.05 / 2), n - 1) * SE)
+
+descriptives_Errors <- cbind(descriptives[,1:2],round(descriptives[,3:8],2))
+descriptives_Errors
+
+descriptives <- main_df %>% group_by(Evaluation, CL, block, trial_block) %>% 
+  dplyr::summarise(M = mean(Errors,na.rm = TRUE), SD = sd(Errors,na.rm = TRUE), n = n()) %>% 
+  mutate(SE = SD / sqrt(n),
+         CI_lower = M - qt(1 - (0.05 / 2), n - 1) * SE,
+         CI_upper = M + qt(1 - (0.05 / 2), n - 1) * SE)
+
+descriptives_Errors_all <- cbind(descriptives[,1:4],round(descriptives[,5:10],2))
+descriptives_Errors_all
+```
+
+Omission errors
+
+```{r}
+agg_df %>% group_by(ID) %>% select(oER) %>% count() %>%
+  mutate( "%" = round(freq / sum(freq) * 100))
+```
+
+Reaction Time
+
+```{r}
+descriptives <- agg_df %>% group_by(Evaluation, CL) %>% 
+  dplyr::summarise(M = mean(RT_Raw,na.rm = TRUE), SD = sd(RT_Raw,na.rm = TRUE), n = n()) %>% 
+  mutate(SE = SD / sqrt(n),
+         CI_lower = M - qt(1 - (0.05 / 2), n - 1) * SE,
+         CI_upper = M + qt(1 - (0.05 / 2), n - 1) * SE)
+
+descriptives_RT_Raw <- cbind(descriptives[,1:2],round(descriptives[,3:8],2))
+descriptives_RT_Raw
+
+
+descriptives <- main_df %>% group_by(Evaluation, CL, block, trial_block) %>% 
+  dplyr::summarise(M = mean(RT_Raw,na.rm = TRUE), SD = sd(RT_Raw,na.rm = TRUE), n = n()) %>% 
+  mutate(SE = SD / sqrt(n),
+         CI_lower = M - qt(1 - (0.05 / 2), n - 1) * SE,
+         CI_upper = M + qt(1 - (0.05 / 2), n - 1) * SE)
+
+descriptives_RT_Raw_all <- cbind(descriptives[,1:4],round(descriptives[,5:10],2))
+descriptives_RT_Raw_all
+```
+
+*Merge descriptives*
+
+```{r}
+## Across Evaluation and CL
+c_names <- colnames(descriptives_RT_Raw)[-1:-2]
+colnames(descriptives_RT_Raw)[-1:-2] <- paste("Reaction Time.", c_names)
+
+c_names <- colnames(descriptives_Errors)[-1:-2]
+colnames(descriptives_Errors)[-1:-2] <- paste("Errors.", c_names)
+
+dscr_er <- inner_join(descriptives_RT_Raw[,1:4], descriptives_Errors[,1:4],
+                      by = c("Evaluation", "CL"))
+
+table <- nice_table(dscr_er, separate.header = TRUE)
+#table
+save_as_docx(table, path = "TablesFigures/Table A2 - Descriptives WM Performance.docx")
+
+
+## Across evaluation, CL, condition blocks, and trial blocks
+c_names <- colnames(descriptives_RT_Raw_all)[-1:-4]
+colnames(descriptives_RT_Raw_all)[-1:-4] <- paste("Reaction Time.", c_names)
+
+c_names <- colnames(descriptives_Errors_all)[-1:-4]
+colnames(descriptives_Errors_all)[-1:-4] <- paste("Errors.", c_names)
+
+dscr_er <- inner_join(descriptives_RT_Raw_all[,1:6], descriptives_Errors_all[,1:6], 
+                      by = c("Evaluation", "CL", "block", "trial_block"))
+
+table <- nice_table(dscr_er, separate.header = TRUE)#, italics = seq(dscr_er))
+#table
+
+save_as_docx(table, path = "TablesFigures/Descriptives WM Performance across blocks.docx")
+##
+```
+
+## Eustress and Distress (ADES)
+
+Eustress
+
+```{r}
+
+descriptives <- agg_df %>% group_by(Evaluation, CL) %>% 
+  dplyr::summarise(M = mean(Eustress,na.rm = TRUE), SD = sd(Eustress,na.rm = TRUE), n = n()) %>% 
+  mutate(SE = SD / sqrt(n),
+         CI_lower = M - qt(1 - (0.05 / 2), n - 1) * SE,
+         CI_upper = M + qt(1 - (0.05 / 2), n - 1) * SE)
+
+descriptives_Eustress <- cbind(descriptives[,1:2],round(descriptives[,3:8],2))
+descriptives_Eustress
+```
+
+Distress
+
+```{r}
+descriptives <- agg_df %>% group_by(Evaluation, CL) %>% 
+  dplyr::summarise(M = mean(Distress,na.rm = TRUE), SD = sd(Distress,na.rm = TRUE), n = n()) %>% 
+  mutate(SE = SD / sqrt(n),
+         CI_lower = M - qt(1 - (0.05 / 2), n - 1) * SE,
+         CI_upper = M + qt(1 - (0.05 / 2), n - 1) * SE)
+
+descriptives_Distress <- cbind(descriptives[,1:2],round(descriptives[,3:8],2))
+descriptives_Distress
+```
+
+*Merge Variables*
+
+```{r}
+c_names <- colnames(descriptives_Eustress)[-1:-2]
+colnames(descriptives_Eustress)[-1:-2] <- paste("Eustress.", c_names)
+
+c_names <- colnames(descriptives_Distress)[-1:-2]
+colnames(descriptives_Distress)[-1:-2] <- paste("Distress.", c_names)
+
+dscr <- inner_join(descriptives_Eustress[,1:4], descriptives_Distress[,1:4],
+                      by = c("Evaluation", "CL"))
+
+table <- nice_table(dscr, separate.header = TRUE)#, italics = seq(dscr_er))
+#table
+
+save_as_docx(table, path = "TablesFigures/Table A4 - Descriptives ADES.docx")
+```
+
+## NASA-TLX
+
+Mental
+
+```{r}
+descriptives <- agg_df %>% group_by(Evaluation, CL) %>% 
+  dplyr::summarise(M = mean(Mental,na.rm = TRUE), SD = sd(Mental,na.rm = TRUE), n = n()) %>% 
+  mutate(SE = SD / sqrt(n),
+         CI_lower = M - qt(1 - (0.05 / 2), n - 1) * SE,
+         CI_upper = M + qt(1 - (0.05 / 2), n - 1) * SE)
+
+descriptives_Mental <- cbind(descriptives[,1:2],round(descriptives[,3:8],2))
+descriptives_Mental
+```
+
+Temporal
+
+```{r}
+descriptives <- agg_df %>% group_by(Evaluation, CL) %>% 
+  dplyr::summarise(M = mean(Temporal,na.rm = TRUE), SD = sd(Temporal,na.rm = TRUE), n = n()) %>% 
+  mutate(SE = SD / sqrt(n),
+         CI_lower = M - qt(1 - (0.05 / 2), n - 1) * SE,
+         CI_upper = M + qt(1 - (0.05 / 2), n - 1) * SE)
+
+descriptives_Temporal <- cbind(descriptives[,1:2],round(descriptives[,3:8],2))
+descriptives_Temporal
+```
+
+Effort
+
+```{r}
+descriptives <- agg_df %>% group_by(Evaluation, CL) %>% 
+  dplyr::summarise(M = mean(Effort,na.rm = TRUE), SD = sd(Effort,na.rm = TRUE), n = n()) %>% 
+  mutate(SE = SD / sqrt(n),
+         CI_lower = M - qt(1 - (0.05 / 2), n - 1) * SE,
+         CI_upper = M + qt(1 - (0.05 / 2), n - 1) * SE)
+
+descriptives_Effort <- cbind(descriptives[,1:2],round(descriptives[,3:8],2))
+descriptives_Effort
+```
+
+Perceived Performance
+
+```{r}
+descriptives <- agg_df %>% group_by(Evaluation, CL) %>% 
+  dplyr::summarise(M = mean(Performance,na.rm = TRUE), SD = sd(Performance,na.rm = TRUE), n = n()) %>% 
+  mutate(SE = SD / sqrt(n),
+         CI_lower = M - qt(1 - (0.05 / 2), n - 1) * SE,
+         CI_upper = M + qt(1 - (0.05 / 2), n - 1) * SE)
+
+descriptives_Performance <- cbind(descriptives[,1:2],round(descriptives[,3:8],2))
+descriptives_Performance
+```
+
+Frustration
+
+```{r}
+descriptives <- agg_df %>% group_by(Evaluation, CL) %>% 
+  dplyr::summarise(M = mean(Frustration,na.rm = TRUE), SD = sd(Frustration,na.rm = TRUE), n = n()) %>% 
+  mutate(SE = SD / sqrt(n),
+         CI_lower = M - qt(1 - (0.05 / 2), n - 1) * SE,
+         CI_upper = M + qt(1 - (0.05 / 2), n - 1) * SE)
+
+descriptives_Frustration <- cbind(descriptives[,1:2],round(descriptives[,3:8],2))
+descriptives_Frustration
+```
+
+*Merge*
+
+```{r}
+c_names <- colnames(descriptives_Mental)[-1:-2]
+colnames(descriptives_Mental)[-1:-2] <- paste("Mental Demand.", c_names)
+
+c_names <- colnames(descriptives_Temporal)[-1:-2]
+colnames(descriptives_Temporal)[-1:-2] <- paste("Temporal Demand.", c_names)
+
+c_names <- colnames(descriptives_Effort)[-1:-2]
+colnames(descriptives_Effort)[-1:-2] <- paste("Effort.", c_names)
+
+c_names <- colnames(descriptives_Performance)[-1:-2]
+colnames(descriptives_Performance)[-1:-2] <- paste("Performance.", c_names)
+
+c_names <- colnames(descriptives_Frustration)[-1:-2]
+colnames(descriptives_Frustration)[-1:-2] <- paste("Frustration.", c_names)
+
+dscr_nasa <- inner_join(descriptives_Mental[,1:4], descriptives_Temporal[,1:4],
+                      by = c("Evaluation", "CL")) %>%
+  inner_join(descriptives_Effort[,1:4], by = c("Evaluation", "CL")) %>%
+  inner_join(descriptives_Performance[,1:4], by = c("Evaluation", "CL")) %>%
+  inner_join(descriptives_Frustration[,1:4], by = c("Evaluation", "CL"))
+
+table <- nice_table(dscr_nasa, separate.header = TRUE)#, italics = seq(dscr_er))
+
+save_as_docx(table, path = "TablesFigures/Table A1 - Descriptives NASA.docx")
+```
+
+# Visualisation
+
+Import customised raincloud plot functions
+
+```{r}
+source("raincloud_function.R")
+```
+
+## Working Memory Performance
+
+Errors
+
+```{r, fig.width=7, fig.height=5}
+errors_df <- raincloud_prepare_data(data = agg_df,
+                                id_variable = "ID",
+                                y_variable = "Errors",
+                                within_factor = "Evaluation",
+                                between_factor = "CL",
+                                within_levels = c(0,1),
+                                between_levels = c("low", "high"))
+
+errors_plot <-raincloud_plot(data = errors_df$data,
+               within_levels = c("Control", "Evaluation"),
+               within_label = "",
+               between_levels = c("Low", "High"),
+               violins = T,
+               boxplot = T,
+               between_annotations = "bottom") +
+  xlab("Cognitive Load") + ylab("Errors")
+```
+
+Reaction Time
+
+```{r}
+rt_df <- raincloud_prepare_data(data = agg_df,
+                                id_variable = "ID",
+                                y_variable = "RT_Raw",
+                                within_factor = "Evaluation",
+                                between_factor = "CL",
+                                within_levels = c(0,1),
+                                between_levels = c("low", "high"))
+
+rt_plot <-raincloud_plot(data = rt_df$data,
+               within_levels = c("Control", "Evaluation"),
+               within_label = "",
+               between_levels = c("Low", "High"),
+               violins = T,
+               boxplot = T,
+               between_annotations = "bottom") +
+  xlab("Cognitive Load") + ylab("Reaction Time")
+```
+
+*Merge plots*
+
+```{r, fig.width=10, fig.height=5}
+combined_plot <- (errors_plot | rt_plot) +
+  plot_annotation(tag_levels = 'A', tag_suffix = ")") +
+  plot_layout(guides = "collect") &
+  theme(legend.position='bottom')
+
+# Display the combined plot
+print(combined_plot)
+ggsave("TablesFigures/Figure A1 - WM Performance Raincloud_plot.jpeg",dpi=600, w= 10, h = 5)
+```
+
+## Perceived Stress (ADES)
+
+Eustress
+
+```{r}
+eustress_df <- raincloud_prepare_data(data = agg_df,
+                                id_variable = "ID",
+                                y_variable = "Eustress",
+                                within_factor = "Evaluation",
+                                between_factor = "CL",
+                                within_levels = c(0,1),
+                                between_levels = c("low", "high"))
+
+eustress_plot <-raincloud_plot(data = eustress_df$data,
+               within_levels = c("Control", "Evaluation"),
+               within_label = "",
+               between_levels = c("Low", "High"),
+               violins = T,
+               boxplot = T,
+               between_annotations = "bottom") +
+  xlab("Cognitive Load") + ylab("Eustress")
+```
+
+Distress
+
+```{r}
+distress_df <- raincloud_prepare_data(data = agg_df,
+                                id_variable = "ID",
+                                y_variable = "Distress",
+                                within_factor = "Evaluation",
+                                between_factor = "CL",
+                                within_levels = c(0,1),
+                                between_levels = c("low", "high"))
+
+distress_plot <-raincloud_plot(data = distress_df$data,
+               within_levels = c("Control", "Evaluation"),
+               within_label = "",
+               between_levels = c("Low", "High"),
+               violins = T,
+               boxplot = T,
+               between_annotations = "bottom") +
+  xlab("Cognitive Load") + ylab("Distress")
+```
+
+*Merge plots*
+
+```{r, fig.width=10, fig.height=5}
+combined_plot <- (eustress_plot | distress_plot) +
+  plot_annotation(tag_levels = 'A', tag_suffix = ")") +
+  plot_layout(guides = "collect") &
+  theme(legend.position='bottom')
+
+# Display the combined plot
+print(combined_plot)
+ggsave("TablesFigures/Figure A2 - ADES Raincloud_plot.jpeg",dpi=600, w= 10, h = 5)
+```
+
+## Mental Demand
+
+```{r, fig.width=7, fig.height=5}
+mental_df <- raincloud_prepare_data(data = agg_df,
+                                id_variable = "ID",
+                                y_variable = "Mental",
+                                within_factor = "CL",
+                                between_factor = "Evaluation",
+                                within_levels = c("low", "high"),
+                                between_levels = c(0,1))
+
+mental_plot <-raincloud_plot(data = mental_df$data,
+               within_levels = c("Low", "High"),
+               within_label = "Cognitive Load",
+               between_levels = c("Control", "Evaluation"),
+               violins = T,
+               boxplot = T,
+               between_annotations = "bottom") +
+  xlab("Social Evaluation") + ylab("Mental Demand")
+
+print(mental_plot)
+ggsave("TablesFigures/Figure 2 - Mental Demand raincloud-plot.jpeg",dpi=600, w= 7, h = 5)
+```

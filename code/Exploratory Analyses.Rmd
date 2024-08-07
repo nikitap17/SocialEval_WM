@@ -1,0 +1,691 @@
+**Import libraries using a reproducible approach**
+
+```{r}
+pkgs <- c("tidyverse",
+          "ggpubr",
+          "lme4",
+          "lmerTest",
+          "rstatix",
+          "BayesFactor",
+          "car",
+          "emmeans",
+          "modelbased",
+          "rempsyc",
+          "effectsize",
+          "flextable",
+          "parameters")
+
+lapply(pkgs, library, character.only=TRUE)
+
+options(es.use_symbols = TRUE)
+
+```
+
+### Data Preparation
+
+```{r}
+main_df <- read_csv("Data/clean_data/main_df.csv", show_col_types = FALSE)
+main_df$ID <- factor(main_df$ID)
+main_df$Evaluation <- factor(main_df$Evaluation)
+main_df$CL <- factor(main_df$CL)
+main_df$block <- factor(main_df$block)
+main_df$trial_block <- factor(main_df$trial_block)
+
+agg_df <- read_csv("Data/clean_data/agg_df.csv", show_col_types = FALSE)
+agg_df$ID <- factor(agg_df$ID)
+agg_df$Evaluation <- factor(agg_df$Evaluation)
+agg_df$CL <- factor(agg_df$CL)
+
+experiment_data <- read_csv("Data/clean_data/experiment_data.csv", show_col_types = FALSE)
+experiment_data$ID <- factor(experiment_data$ID)
+experiment_data$Evaluation <- factor(experiment_data$Evaluation)
+experiment_data$CL <- factor(experiment_data$CL)
+experiment_data$block <- factor(experiment_data$block)
+experiment_data$trial_block <- factor(experiment_data$trial_block)
+```
+
+# Exploratory Analyses
+
+### RT and Errors
+
+```{r}
+df_perceived <- agg_df[,c("ID","CL","Evaluation","RT_Raw","Errors")]
+
+wide_df <- pivot_wider(df_perceived, id_cols = c(ID,CL), names_from = Evaluation,
+                          values_from = c(RT_Raw,Errors))
+
+wide_df <- subset(wide_df, is.na(RT_Raw_0) == F & is.na(RT_Raw_1) == F)
+```
+
+Reaction Time
+
+```{r}
+lm.rt <- lm(scale(RT_Raw_1) ~ scale(RT_Raw_0), data=wide_df)
+cor.test(wide_df$RT_Raw_0,wide_df$RT_Raw_1)
+lm.exp <- lm(scale(RT_Raw_1) ~ scale(RT_Raw_0) + I(exp(scale(RT_Raw_0))), data=wide_df)
+lm.qu <- lm(scale(RT_Raw_1) ~ scale(RT_Raw_0) + I(scale(RT_Raw_0^2)), data=wide_df)
+lm.cub <- lm(scale(RT_Raw_1) ~ scale(RT_Raw_0) + I(scale(RT_Raw_0^2))+ I(scale(RT_Raw_0^3)), data=wide_df)
+
+BIC(lm,lm.exp,lm.qu,lm.cub)[order(BIC(lm,lm.exp,lm.qu,lm.cub)$BIC),]
+
+# Visualising
+lm <- lm(RT_Raw_1 ~ RT_Raw_0, data=wide_df)
+lm.exp <- lm(RT_Raw_1 ~ RT_Raw_0 + I(exp(RT_Raw_0)), data=wide_df)
+lm.qu <- lm(RT_Raw_1 ~ RT_Raw_0 + I(RT_Raw_0^2), data=wide_df)
+
+ggplot(wide_df, aes(x = RT_Raw_0, y = RT_Raw_1)) +
+  geom_point(color="azure4", alpha=0.7) +  # Add points
+  #geom_smooth(method = "lm", se = FALSE) +
+  geom_line(aes(y=predict(lm.qu)),color="deepskyblue4")+
+  geom_line(aes(y=predict(lm)), color="coral")+
+  geom_line(aes(y=predict(lm.exp)), color="gold")+
+  labs(x = "RT control", y = "RT stress", title = "Scatter plot with Regression Line")+
+  theme_classic()
+```
+
+Errors
+
+```{r}
+lm.er <- lm(scale(Errors_1) ~ scale(Errors_0), data=wide_df)
+cor.test(wide_df$Errors_0,wide_df$Errors_1)
+lm.exp <- lm(scale(Errors_1) ~ scale(Errors_0) + I(exp(scale(Errors_0))), data=wide_df)
+lm.qu <- lm(scale(Errors_1) ~ scale(Errors_0) + I(scale(Errors_0^2)), data=wide_df)
+lm.cub <- lm(scale(Errors_1) ~ scale(Errors_0) + I(scale(Errors_0^2))+ I(scale(Errors_0^3)), data=wide_df)
+
+BIC(lm,lm.exp,lm.qu,lm.cub)[order(BIC(lm,lm.exp,lm.qu,lm.cub)$BIC),]
+
+# Visualising
+lm <- lm(Errors_1 ~ Errors_0, data=wide_df)
+lm.exp <- lm(Errors_1 ~ Errors_0 + I(exp(Errors_0)), data=wide_df)
+lm.qu <- lm(Errors_1 ~ Errors_0 + I(Errors_0^2), data=wide_df)
+
+ggplot(wide_df, aes(x = Errors_0, y = Errors_1)) +
+  geom_point(color="azure4", alpha=0.7) +  # Add points
+  #geom_smooth(method = "lm", se = FALSE) +
+  geom_line(aes(y=predict(lm.qu)),color="deepskyblue4")+
+  geom_line(aes(y=predict(lm)), color="coral")+
+  geom_line(aes(y=predict(lm.exp)), color="gold")+
+  labs(x = "Errors control", y = "Errors social stress")+
+  theme_classic()
+
+
+## Coeficients
+lm.rt <- lm(RT_Raw_1 ~ RT_Raw_0, data=wide_df)
+lm.er <- lm(Errors_1 ~ Errors_0, data=wide_df)
+model_parameters(lm.rt)
+effectsize(lm.rt)
+model_parameters(lm.er)
+effectsize(lm.er)
+```
+
+### DEPRICATED. Evaluation and CL effects on Target trials only
+
+```{r}
+target_df <- experiment_data %>% filter(Target == 1)
+```
+
+Errors
+
+```{r}
+m1 <- glmer(Errors ~ CL+Evaluation + (1|ID),
+             data=target_df, family = binomial)
+m1a <- glmer(Errors ~ CL*Evaluation + (1|ID),
+             data=target_df, family = binomial)
+m0 <- glmer(Errors ~ CL + (1|ID),
+            data=target_df, family = binomial)
+
+AIC(m1)- AIC(m1a)
+BIC(m1)- BIC(m1a)
+
+AIC(m0)- AIC(m1)
+BIC(m0)- BIC(m1)
+
+AIC(m0,m1,m1a)
+BIC(m0,m1,m1a)
+summary(m1)
+summary(m1a)
+
+parameters(m1a, exponentiate = T)
+
+m1_nontargets <- glmer(Errors ~ CL+Evaluation + (1|ID),
+             data=experiment_data %>% filter(Target == 0), family = binomial)
+parameters(m1_nontargets, exponentiate = T)
+
+
+
+#Evaluation*CL
+emm_eu <- estimate_means(m1a, ~CL*Evaluation)
+
+ggplot(emm_eu, aes(x = Evaluation, y = Probability, group = CL, shape= CL, color = CL,
+                   linetype = CL)) +
+  geom_point(position = position_dodge(width = 0.2), size = 2.5) +
+  geom_line(position = position_dodge(width = 0.2), size = 0.5) +
+  geom_errorbar(aes(ymin=CI_low, ymax=CI_high), width=.2,
+                position=position_dodge(0.2),linewidth=0.35,linetype=1)+
+  labs(x = "Social Evaluation", y = "Error Probability",
+       color = "Cognitive Load", shape="Cognitive Load", linetype= "Cognitive Load") +
+  
+  scale_x_discrete(labels = c("Control", "Evaluation")) +
+  
+  scale_shape_manual(values = c(15, 19),
+                     labels = c("low", "high")) +  # Use square for H0 and circle for H1
+  scale_color_manual(values = c("#008080", "#E34234"),
+                     labels = c("low", "high")) +  # Orange color for H0 and dark green for H1
+  scale_linetype_manual(values=c(1,2),
+                        labels=c("low","high")) +
+  
+  theme_classic() +
+  theme(legend.text = element_text(size = 8),
+        axis.title.x = element_text(vjust = -3),
+        axis.title.y = element_text(vjust = 3),
+        plot.margin = margin(b = 15, l=15))
+
+
+ggsave("TablesFigures/EMM TARGET Errors interaction GLMM.jpeg",dpi=300,width = 4, height = 3)
+```
+
+RT
+
+```{r}
+m1 <- lmer(RT_Raw ~ CL+Evaluation + (1|ID),
+            data=target_df, REML=T)
+m1a <- lmer(RT_Raw ~ CL*Evaluation + (1|ID),
+             data=target_df, REML=T)
+m0 <- lmer(RT_Raw ~ CL + (1|ID),
+            data=target_df, REML=T)
+
+AIC(m0,m1,m1a)
+BIC(m0,m1,m1a)
+summary(m1)
+summary(m1a)
+
+
+#Evaluation*CL
+emm_eu <- estimate_means(m1a, ~CL*Evaluation)
+
+ggplot(emm_eu, aes(x = Evaluation, y = Mean, group = CL, shape= CL, color = CL,
+                   linetype = CL)) +
+  geom_point(position = position_dodge(width = 0.2), size = 2.5) +
+  geom_line(position = position_dodge(width = 0.2), size = 0.5) +
+  geom_errorbar(aes(ymin=CI_low, ymax=CI_high), width=.2,
+                position=position_dodge(0.2),linewidth=0.35,linetype=1)+
+  labs(x = "Social Evaluation", y = "Error Probability",
+       color = "Cognitive Load", shape="Cognitive Load", linetype= "Cognitive Load") +
+  
+  scale_x_discrete(labels = c("Control", "Evaluation")) +
+  
+  scale_shape_manual(values = c(15, 19),
+                     labels = c("low", "high")) +  # Use square for H0 and circle for H1
+  scale_color_manual(values = c("#008080", "#E34234"),
+                     labels = c("low", "high")) +  # Orange color for H0 and dark green for H1
+  scale_linetype_manual(values=c(1,2),
+                        labels=c("low","high")) +
+  
+  theme_classic() +
+  theme(legend.text = element_text(size = 8),
+        axis.title.x = element_text(vjust = -3),
+        axis.title.y = element_text(vjust = 3),
+        plot.margin = margin(b = 15, l=15))
+
+
+ggsave("TablesFigures/EMM TARGET RT interaction GLMM.jpeg",dpi=300,width = 4, height = 3)
+```
+
+### Perceived Performance
+
+```{r}
+## Reaction Time
+m <- lmer(scale(RT_Raw) ~ block + trial_block + CL + Evaluation + scale(Eustress) + scale(Performance) + (1|ID),
+           data=main_df, REML = T)
+
+
+t_ <- model_parameters(m)[1:8,1:9] %>% dplyr::select(-"CI")
+# Extract unstandardized Beta
+Beta_m <- lmer(RT_Raw ~ block + trial_block + CL + Evaluation + Eustress + Performance + (1|ID),
+               data=main_df, REML = T)
+t_Beta <- model_parameters(Beta_m)[1:8,] %>% dplyr::select("Parameter", "Coefficient")
+colnames(t_Beta)[2] <- "Unstandardized B"
+table <- cbind(t_Beta, t_)[,-3]
+
+table <- nice_table(table, 
+                    title = c("Table X", "perceived performance and perceived stress in ralation to rt"),
+                    note = c(
+                      "* p < .05, ** p < .01, *** p < .001. CL = Cognitive Load; CI = Confidence Interval."
+                    ))
+table
+
+
+## Errors
+m <- glmer(Errors ~ block + trial_block + CL + scale(Eustress) + scale(Distress) + scale(Performance) + (1|ID),
+            data=experiment_data, family = binomial)
+model_parameters(m, exponentiate = T)
+summary(m)
+
+
+
+# step 2
+m <- lmer(scale(Performance) ~ CL + scale(RT_Raw) + scale(Errors) +(1|ID),
+           data=agg_df, REML=T)
+
+## Get nice table fro LMM full
+t_ <- model_parameters(m)[1:4,1:9] %>% dplyr::select(-"CI")
+
+# Extract unstandardized Beta
+Beta_m <- lmer(Performance ~ CL + RT_Raw + Errors +(1|ID),
+               data=agg_df, REML=T)
+t_Beta <- model_parameters(Beta_m)[1:4,] %>% dplyr::select("Parameter", "Coefficient")
+colnames(t_Beta)[2] <- "Unstandardized B"
+table <- cbind(t_Beta, t_)[,-3]
+
+table <- nice_table(table, 
+                    title = c("Table X", "Perceived Performance and Errors/RT"),
+                    note = c(
+                      "* p < .05, ** p < .01, *** p < .001. CL = Cognitive Load; CI = Confidence Interval."
+                    ))
+table
+```
+
+#### Perceived Performance and eustress/distress
+
+```{r}
+gl.perf.er <- glmer(Errors ~ block + trial_block + CL + Evaluation + scale(Performance)+scale(ratio) + (1|ID),
+            data=experiment_data, family = binomial)
+summary(gl.perf.er)
+model_parameters(gl.perf.er)
+
+lm.perf.er <- lmer(scale(Errors) ~ CL + Evaluation + scale(Performance)+scale(ratio) + (1|ID),
+            data=agg_df, REML=T)
+summary(lm.perf.er)
+
+
+perform.rt.m <- lmer(scale(RT_Raw) ~ block + trial_block + CL + Evaluation + scale(Performance)+scale(Eustress) + (CL+Evaluation|ID),
+           data=main_df, REML=T)
+perform.rt.m.uns <- lmer(RT_Raw ~ block + trial_block + CL + Evaluation + scale(Performance)+scale(Eustress) + (CL+Evaluation|ID),
+                     data=main_df, REML=T)
+model_parameters(perform.rt.m)
+model_parameters(perform.rt.m.uns)
+```
+
+### Mental Demand
+
+```{r}
+mental.m <- lmer(Mental ~ CL*Evaluation + (CL+Evaluation|ID),
+           data=agg_df, REML=T, contrasts=type3)
+aov_mental <- anova(mental.m,type=3)
+aov_mental
+epsilon_squared(aov_mental)
+effectsize(m1)
+model_parameters(m1)
+
+emm <- estimate_means(mental.m, ~CL*Evaluation)
+
+ggplot(emm, aes(x = Evaluation, y = Mean, group = CL, color=CL,shape=CL, linetype = CL)) +
+  geom_point(position = position_dodge(width = 0.2), size = 2.5) +
+  geom_line(position = position_dodge(width = 0.2), linewidth = 0.5) +
+  geom_errorbar(aes(ymin=CI_low, ymax=CI_high), width=.2,
+                position=position_dodge(0.2),linewidth=0.35,linetype=1)+
+  labs(x = "Social Evaluation", y = "Mental Demand",
+       color = "Cognitive Load", shape="Cognitive Load", linetype= "Cognitive Load") +
+  
+  scale_shape_manual(values = c(15, 19),
+                     labels = c("low", "high")) +  # Use square for H0 and circle for H1
+  scale_color_manual(values = c("#008080", "#E34234"),
+                     labels = c("low", "high")) +  # Orange color for H0 and dark green for H1
+  scale_linetype_manual(values = c(1,2),
+                        labels = c("low", "high")) +
+  
+  theme_classic() +
+  theme(legend.text = element_text(size = 8),
+        axis.title.x = element_text(vjust = -3),
+        axis.title.y = element_text(vjust = 3),
+        plot.margin = margin(b = 15, l=15)) +
+  
+  scale_x_discrete(labels = c("Control", "Evaluation"))
+
+ggsave("TablesFigures/Perceived Mental.jpeg",dpi=300,width = 4, height = 3)
+# greater effect in CL high group
+```
+
+### Temporal Demand
+
+```{r}
+temp.m <- lmer(Temporal ~ CL*Evaluation + (CL+Evaluation|ID),
+                 data=agg_df, REML=T, contrasts=type3)
+aov_temp <- anova(temp.m,type=3)
+aov_temp
+epsilon_squared(aov_temp)
+effectsize(temp.m)
+model_parameters(temp.m)
+
+emm <- estimate_means(temp.m, ~CL*Evaluation)
+
+ggplot(emm, aes(x = Evaluation, y = Mean, group = CL, color=CL,shape=CL, linetype = CL)) +
+  geom_point(position = position_dodge(width = 0.2), size = 2.5) +
+  geom_line(position = position_dodge(width = 0.2), linewidth = 0.5) +
+  geom_errorbar(aes(ymin=CI_low, ymax=CI_high), width=.2,
+                position=position_dodge(0.2),linewidth=0.35,linetype=1)+
+  labs(x = "Social Evaluation", y = "Temporal Demand",
+       color = "Cognitive Load", shape="Cognitive Load", linetype= "Cognitive Load") +
+  
+  scale_shape_manual(values = c(15, 19),
+                     labels = c("low", "high")) +  # Use square for H0 and circle for H1
+  scale_color_manual(values = c("#008080", "#E34234"),
+                     labels = c("low", "high")) +  # Orange color for H0 and dark green for H1
+  scale_linetype_manual(values = c(1,2),
+                        labels = c("low", "high")) +
+  
+  theme_classic() +
+  theme(legend.text = element_text(size = 8),
+        axis.title.x = element_text(vjust = -3),
+        axis.title.y = element_text(vjust = 3),
+        plot.margin = margin(b = 15, l=15)) +
+  
+  scale_x_discrete(labels = c("Control", "Evaluation"))
+
+#ggsave("TablesFigures/Perceived Temporal.jpeg",dpi=300,width = 4, height = 3)
+```
+
+### EDA
+
+Differences across conditions
+
+```{r}
+m1 <- lmer(scale(EDA) ~ CL+Evaluation + (1|ID),
+           data=agg_EDA, REML=T)
+m2 <- lmer(scale(EDA) ~ CL+Evaluation + (CL+Evaluation|ID),
+           data=agg_EDA, REML=T)
+m3 <- lmer(scale(EDA) ~ CL*Evaluation + (CL+Evaluation|ID),
+           data=agg_EDA, REML=T)
+AIC(m1,m2,m3)
+BIC(m1,m2,m3)
+summary(m2)
+
+aov <- anova_test(data = agg_EDA, EDA ~ CL*Evaluation + Error(ID/(CL*Evaluation)), type =3,
+                  effect.size="pes")
+get_anova_table(aov)
+
+
+emm_eu <- estimate_means(m2, ~CL*Evaluation)
+
+ggplot(emm_eu, aes(x = Evaluation, y = Mean, group = CL, color = CL)) +
+  geom_point(position = position_dodge(width = 0.2), size = 2.5) +
+  geom_line(position = position_dodge(width = 0.2), size = 0.5) +
+  geom_errorbar(aes(ymin=CI_low, ymax=CI_high), width=.2,
+                position=position_dodge(0.15),linewidth=0.35,linetype=1)+
+  labs(x = "Evaluation", y = "EDA", color = "CL") +
+  theme_minimal()
+
+ggsave("TablesFigures/EDA across conditions.jpeg",dpi=300,width = 4, height = 3)
+# greater effect in CL high group
+```
+
+EDA prediction of RT and Errors
+
+```{r}
+m1 <- lmer(scale(RT_Raw) ~ scale(EDA) + (1|ID),
+           data=agg_EDA, REML=T)
+
+m2 <- lmer(scale(RT_Raw) ~ scale(EDA) + (EDA|ID),
+           data=agg_EDA, REML=T)
+AIC(m1,m2) #m1
+BIC(m1,m2) #m1
+
+summary(m1) # The higher EDA, the faster RT
+
+
+m2 <- lmer(scale(RT_Raw) ~ CL+Evaluation + scale(EDA) + (1|ID),
+           data=agg_EDA, REML=T)
+
+m3 <- lmer(scale(RT_Raw) ~ CL+Evaluation + scale(EDA) + (CL+Evaluation|ID),
+           data=agg_EDA, REML=T)
+
+m4 <- lmer(scale(RT_Raw) ~ CL*Evaluation*scale(EDA) + (1|ID),
+           data=agg_EDA, REML=T)
+
+m5 <- lmer(scale(RT_Raw) ~ CL*Evaluation*scale(EDA) + (CL+Evaluation|ID),
+           data=agg_EDA, REML=T)
+
+AIC(m1,m2,m3,m4, m5)[order(AIC(m1,m2, m3, m4, m5)$AIC),] # prefers m3
+BIC(m1,m2,m3,m4, m5)[order(BIC(m1,m2, m3, m4, m5)$BIC),] # prefers m2
+
+summary(m2) 
+summary(m3) #EDA sign.
+
+'The higher EDA, the faster RT'
+
+
+## Get nice table fro LMM full
+t_ <- model_parameters(m3)[1:4,1:9] %>% dplyr::select(-"CI")
+
+# Extract unstandardized Beta
+Beta_m <- lmer(scale(RT_Raw, scale=F) ~ CL+Evaluation + scale(EDA) + (CL+Evaluation|ID),
+               data=agg_EDA, REML=T)
+t_Beta <- model_parameters(Beta_m)[1:4,] %>% dplyr::select("Parameter", "Coefficient")
+colnames(t_Beta)[2] <- "Unstandardized B"
+table <- inner_join(t_Beta, t_, c="Parameter")
+
+table <- nice_table(table, 
+                    title = c("Table X", "EDA and Reaction Time (Type I Sum of Squares)"),
+                    note = c(
+                      "* p < .05, ** p < .01, *** p < .001. CL = Cognitive Load; CI = Confidence Interval."
+                    ))
+table
+
+save_as_docx(table, path = "TablesFigures/EDA RT LMM.docx")
+
+
+
+
+
+
+m1 <- lmer(scale(Errors) ~ scale(EDA) + (1|ID),
+           data=agg_EDA, REML=T)
+
+m2 <- lmer(scale(Errors) ~ scale(EDA) + (EDA|ID),
+           data=agg_EDA, REML=T)
+AIC(m1,m2) #m1
+BIC(m1,m2) #m1
+
+summary(m1) # No effect
+
+
+m2 <- lmer(scale(Errors) ~ CL+Evaluation + scale(EDA) + (1|ID),
+           data=agg_EDA, REML=T)
+
+m3 <- lmer(scale(Errors) ~ CL+Evaluation + scale(EDA) + (CL+Evaluation|ID),
+           data=agg_EDA, REML=T)
+
+m4 <- lmer(scale(Errors) ~ CL*Evaluation*scale(EDA) + (1|ID),
+           data=agg_EDA, REML=T)
+
+m5 <- lmer(scale(Errors) ~ CL*Evaluation*scale(EDA) + (CL+Evaluation|ID),
+           data=agg_EDA, REML=T)
+
+AIC(m1,m2,m3,m4, m5)[order(AIC(m1,m2, m3, m4, m5)$AIC),] # prefers m3
+BIC(m1,m2,m3,m4, m5)[order(BIC(m1,m2, m3, m4, m5)$BIC),] # prefers m2
+
+summary(m2) 
+summary(m3) #EDA sign. and Evaluation sign.
+'Tendency, the higher EDA, the less errors'#Seems to be similar to eustress
+
+
+## Get nice table fro LMM full
+t_ <- model_parameters(m3)[1:4,1:9] %>% dplyr::select(-"CI")
+
+# Extract unstandardized Beta
+Beta_m <- lmer(scale(Errors, scale=F) ~ CL+Evaluation + scale(EDA) + (CL+Evaluation|ID),
+               data=agg_EDA, REML=T)
+t_Beta <- model_parameters(Beta_m)[1:4,] %>% dplyr::select("Parameter", "Coefficient")
+colnames(t_Beta)[2] <- "Unstandardized B"
+table <- inner_join(t_Beta, t_, c="Parameter")
+
+table <- nice_table(table, 
+                    title = c("Table X", "EDA and Errors (Type I Sum of Squares)"),
+                    note = c(
+                      "* p < .05, ** p < .01, *** p < .001. CL = Cognitive Load; CI = Confidence Interval."
+                    ))
+table
+
+save_as_docx(table, path = "TablesFigures/EDA Errors LMM.docx")
+```
+
+EDA, Eustress and Distress
+
+```{r}
+m1 <- lmer(scale(EDA) ~ scale(Eustress) + (1|ID),
+           data=agg_EDA, REML = T)
+m1a <- lmer(scale(EDA) ~ scale(Eustress) + (Eustress|ID),
+           data=agg_EDA, REML = T)
+AIC(m1,m1a)
+BIC(m1,m1a)
+summary(m1) # no correlation
+
+
+m1 <- lmer(scale(EDA) ~ scale(Distress) + (1|ID),
+           data=agg_EDA, REML = T)
+m1a <- lmer(scale(EDA) ~ scale(Distress) + (Distress|ID),
+            data=agg_EDA, REML = T)
+AIC(m1,m1a)
+BIC(m1,m1a)
+summary(m1) # no correlation
+
+
+m1 <- lmer(scale(EDA) ~ scale(Eustress)*scale(Distress) + (1|ID),
+           data=agg_EDA, REML = T)
+summary(m1) # no effect
+
+
+'Eda seems not related to perceived ratings of Eustress or Distress'
+
+
+## EDA and Frustration
+m1 <- lmer(scale(EDA) ~ scale(Frustration) + (1|ID),
+           data=agg_EDA, REML = T)
+m1a <- lmer(scale(EDA) ~ scale(Frustration) + (Frustration|ID),
+            data=agg_EDA, REML = T)
+AIC(m1,m1a)
+BIC(m1,m1a)
+summary(m1) # no correlation
+```
+
+### Speed-Accuracy trade-off
+
+**Prepare data set**
+```{r}
+control_df <- agg_df[c("ID", "CL", "Evaluation", "RT_Raw", "Errors")] %>% filter(Evaluation==0)
+stress_df <- agg_df[c("ID", "CL", "Evaluation", "RT_Raw", "Errors")] %>% filter(Evaluation==1)
+
+new_df <- inner_join(control_df, stress_df, by=c('ID',"CL"))
+new_df$diff_err <- new_df$Errors.y - new_df$Errors.x
+```
+
+
+To test whether participants traded accuracy for speed on an individual level, we implemented the following approach:
+1. participants are split into two groups. One group performed more accurately under social evaluation (under low CL and/or high CL), whereas the other group performed less accurately under social evaluation.
+2. Conduct a linear model for each group, where CL and Evaluation predict RT. If there is a trade-off effect, the group with improved accuracy performance is expected to show reduced speed (increased RT) and vice versa.
+
+#### a) Participants who performed better under social evaluation
+
+```{r}
+## Participants who performed better under evaluation in
+## a) the low CL condition
+incl_list2back <- unique(new_df$ID[new_df$CL == "low" & new_df$diff_err < 0])
+# b) the high CL condition
+incl_list3back <- unique(new_df$ID[new_df$CL == "high" & new_df$diff_err < 0])
+
+sum(incl_list2back %in% incl_list3back) # N of participants who performed better in both low and high CL
+
+analys_df_2back <- subset(agg_df, CL == "low" & ID %in% incl_list2back)
+analys_df_3back <- subset(agg_df, CL == "high" & ID %in% incl_list3back)
+analys_df <- rbind(analys_df_2back,analys_df_3back)
+
+## LMM
+m_better <- lmer(RT_Raw ~ CL+Evaluation + (1|ID), data =analys_df, REML = T)  
+summary(m_better)
+effectsize(m_better)
+
+cor.test(analys_df$RT_Raw, analys_df$Errors, alternative = "t")
+
+```
+
+
+#### b) Participants who performed worse under social evaluation
+
+```{r}
+## Participants who performed worse in
+## a) the low CL condition
+incl_list2back <- unique(new_df$ID[new_df$CL == "low" & new_df$diff_err > 0])
+## b) the high CL condition
+incl_list3back <- unique(new_df$ID[new_df$CL == "high" & new_df$diff_err > 0])
+
+sum(incl_list2back %in% incl_list3back) # N of participants that performed worse in both low and high CL
+
+analys_df_2back <- subset(agg_df, CL == "low" & ID %in% incl_list2back)
+analys_df_3back <- subset(agg_df, CL == "high" & ID %in% incl_list3back)
+analys_df <- rbind(analys_df_2back,analys_df_3back)
+
+## LMM
+m_worse <- lmer(RT_Raw ~ CL+Evaluation + (CL|ID), data =analys_df, REML = T)  
+summary(m_worse)
+effectsize(m_worse)
+```
+
+```{r}
+incl_list2back <- unique(new_df$ID[new_df$CL == "low" & new_df$diff_err < 0])
+incl_list3back <- unique(new_df$ID[new_df$CL == "high" & new_df$diff_err > 0])
+
+sum(incl_list2back %in% incl_list3back) # N of participants who performed better in low CL and worse in high CL (as hypothesised)
+```
+
+
+### Adversarial Testing: Generalized Drive Theory
+
+*This theory assumes that dominant responses are enhanced by exposure to social presence. The predominant response in the n-back tasks is indicating a non-target, as 66% of all trials are non-targets. Accordingly, we should witness an increase in non-target responses.*
+
+Prepare data set
+
+```{r}
+dominant_response_col <- ifelse((experiment_data$Target == 0 & experiment_data$Errors == 0) | 
+                                (experiment_data$Target == 1 & experiment_data$Errors == 1),
+                                1,0)
+experiment_data$dominant_response <- dominant_response_col
+experiment_data <- experiment_data[, c(1,32, seq(2,ncol(experiment_data)-1))]
+
+```
+
+```{r}
+levels(experiment_data$CL)
+levels(experiment_data$Evaluation)
+is.numeric(experiment_data$dominant_response)
+experiment_data$dominant_response <- factor(experiment_data$dominant_response, levels = c(0,1))
+levels(experiment_data$dominant_response)
+```
+
+GLMM for dominant response
+
+```{r}
+m1 <- glmer(dominant_response ~ Evaluation*CL + (1|ID),
+            data = experiment_data,
+            family = binomial)
+summary(m1)
+dominant_repsonse_results <- parameters(m1)
+dominant_repsonse_results$OR <- exp(dominant_repsonse_results$Coefficient)
+dominant_repsonse_results$OR_ciL <- exp(dominant_repsonse_results$CI_low)
+dominant_repsonse_results$OR_ciH <- exp(dominant_repsonse_results$CI_high)
+dominant_repsonse_results <- dominant_repsonse_results[c(1,2,3,5,6,9,12,13,14)]
+dominant_repsonse_results
+```
+
+### Comparison of blood pressure
+between groups that performed better under social evaluation versus performed worse
+
+
+
+
+
+
+## Version infomation
+
+```{r}
+devtools::session_info()
+```
