@@ -1,5 +1,0 @@
-"0",""
-"0","RT_mod <- m4 # m4 preferred"
-"0","AIC(RT_mod)-AIC(RT_mod_simple)"
-"2","Fehler: Objekt 'RT_mod_simple' nicht gefunden
-"

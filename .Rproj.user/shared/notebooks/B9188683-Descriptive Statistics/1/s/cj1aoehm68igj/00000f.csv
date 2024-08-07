@@ -1,8 +1,0 @@
-"0","descriptives <- agg_df %>% group_by(Stress, CL) %>% "
-"0","  dplyr::summarise(M = mean(Distress,na.rm = TRUE), SD = sd(Distress,na.rm = TRUE), n = n()) %>% "
-"0","  mutate(SE = SD / sqrt(n),"
-"0","         CI_lower = M - qt(1 - (0.05 / 2), n - 1) * SE,"
-"0","         CI_upper = M + qt(1 - (0.05 / 2), n - 1) * SE)"
-"2","`summarise()` has grouped output by 'Stress'. You can override using the `.groups` argument."
-"0","descriptives_Distress <- cbind(descriptives[,1:2],round(descriptives[,3:8],2))"
-"0","descriptives_Distress"
