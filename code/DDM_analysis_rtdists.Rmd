@@ -223,8 +223,10 @@ m3 <- lmer(a ~ z + v1 + v2 + CL+Eval + (1|ID), data = main_df, REML = T)
 AIC(m3)-AIC(m2)
 BIC(m3)-BIC(m2)
 
-
-summary(m2)
+# unstandardized
+model_parameters(m2)
+# standardised
+effectsize(m2)
 ```
 
 ```{r, fig.width=7, fig.height=5}
