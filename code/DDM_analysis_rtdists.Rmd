@@ -1,0 +1,418 @@
+```{r}
+options(digits = 3) # by default, print results to three decimal digits
+
+library(tidyverse)
+library(gridExtra) # for multiple ggplots in one window
+library(gt)        # grammar of tables
+library(xml2)      # save formatted tables as rtf 
+library(reshape2)  # for melt() function
+library(rtdists)  # DDM functions rdiffusion(), ddiffusion(), qdiffusion()
+library(lme4)
+library(lmerTest)
+library(modelbased)
+library(patchwork)
+```
+
+### Load data
+
+```{r}
+experiment_data <- read_csv("Data/clean_data/experiment_data.csv", show_col_types = FALSE)
+experiment_data$ID <- factor(experiment_data$ID)
+experiment_data$Evaluation <- factor(experiment_data$Evaluation)
+experiment_data$CL <- factor(experiment_data$CL, levels = c("low","high"))
+experiment_data$block <- factor(experiment_data$block)
+experiment_data$trial_block <- factor(experiment_data$trial_block)
+```
+
+### Define LL optimisation function
+
+```{r}
+ll_diffusion <- function(pars, datlist)
+{
+  loss=0
+  for (myVar in 1:length(datlist))
+    loss = loss - sum(log(ddiffusion(datlist[[myVar]],
+                                     a=pars[1], v=pars[3+myVar], t0=pars[2], z=pars[3])))
+  return(loss)  # return -LL
+}
+```
+
+# DDM and recovery study for all participants
+
+### Prepare data and initialise a model with 5 parameters
+
+```{r}
+set.seed(42)
+
+data <- experiment_data[,c("ID","Target","Errors","RT_Raw","CL_evaluation")]
+data <- data %>% filter(!is.na(RT_Raw))
+
+data <- mutate(data, response = case_when(
+  (Target==0 & Errors==0) ~ "lower",
+  (Target==0 & Errors==1) ~ "upper",
+  (Target==1 & Errors==0) ~ "upper",
+  (Target==1 & Errors==1) ~ "lower" ))
+
+ddm.df <- data.frame(
+  ID = data$ID,
+  rt = data$RT_Raw,
+  response = as.factor(data$response),
+  cond = data$Target,
+  CL_Eval = data$CL_evaluation)
+
+
+###
+ID_list <- unique(subset(ddm.df, !(ID %in% c("40122", "511327", "765713")))[,"ID"])
+#ID_list <- unique(ddm.df$ID)
+conditions = unique(ddm.df$CL_Eval)
+
+p_ddm5 <- c(1, 0.1, 0.5, 0, 0) # starting values with two drift rates
+names(p_ddm5) <- c("a", "t0", "z", "v1","v2")
+
+n_conditions <- 4
+n_parameters <- 5
+
+ddm_list <- list()
+
+```
+
+### run models
+
+```{r}
+ddm.df$response <- relevel(ddm.df$response, ref="lower") # lower is reference level
+
+for (participant in ID_list){   # loop through each participant
+  
+  sub_df <- subset(ddm.df, ID == participant)
+
+  DDM5 <- data.frame(matrix(NA, nrow=n_conditions, ncol=n_parameters+10))
+  names(DDM5) <- c("ID", "condition", "Ns1", "Ns2", "acc", "M_rt", "a", "z", "v1", "v2", "t0", "converge", "-LLE", "AIC", "BIC")
+  
+  for (i in 1:length(conditions)){    # loop through conditions inside each participant
+    
+    df <- subset(sub_df, CL_Eval == conditions[i])
+    # subset the data into sublists for the two trial types (conditions)
+    data1.s1 = subset(df, cond==0)
+    data1.s2 = subset(df, cond==1)
+    data1.both = list(data1.s1, data1.s2)
+  
+    results <- optim(par=p_ddm5, f=ll_diffusion, dat=data1.both, method="Nelder-Mead", control = c(maxit = 2000))
+    
+    parms <- results$par
+    DDM5[i, "ID"] <- participant
+    DDM5[i,"condition"] <- conditions[i]
+    DDM5[i, "Ns1"] <- nrow(subset(df, cond == 0))
+    DDM5[i, "Ns2"] <- nrow(subset(df, cond==1))
+    DDM5[i,"acc"] <- (table(df$cond, df$resp)[1,1] + table(df$cond, df$resp)[2,2]) / nrow(df)
+    DDM5[i,"M_rt"] <- mean(df$rt)
+    DDM5[i,"a"] <- parms["a"]
+    DDM5[i,"t0"] <- parms["t0"]
+    DDM5[i,"v1"] <- parms["v1"]
+    DDM5[i,"v2"] <- parms["v2"]
+    DDM5[i, "z"] <- (parms["z"] / parms["a"])
+    DDM5[i, "converge"] <- results$convergence
+    DDM5[i,"-LLE"] <- results$value
+    DDM5[i, "AIC"] <- 2*n_parameters - 2*-1*results$value
+    DDM5[i, "BIC"] <- n_parameters*log(DDM5[i, "Ns1"] + DDM5[i, "Ns2"]) - 2*-1*results$value
+  
+  }
+
+  
+  ## Generate recovery study and safe the values in the same data.frame
+  pred_df <- data.frame(matrix(NA, nrow=n_conditions, ncol=n_parameters+4))
+  names(pred_df) <- c("sep", "p.acc", "p.M_rt", "p.a", "p.z", "p.v1", "p.v2", "p.t0", "p.convergence")
+  DDM5 <- cbind(DDM5,pred_df)
+  
+  ###
+  # lower == non-target == s1
+  # upper == target == s2
+  
+  
+  for (i in 1:length(conditions)){
+    
+    
+    parm_recov_s1 <- cbind(rdiffusion(n=DDM5[i,"Ns1"],
+                                   a=DDM5$a[i],
+                                   t0=DDM5$t0[i],
+                                   z=DDM5$z[i],
+                                   v=DDM5$v1[i]), cond=0)
+    parm_recov_s2 <- cbind(rdiffusion(n=DDM5[i,"Ns2"],
+                                   a=DDM5$a[i],
+                                   t0=DDM5$t0[i],
+                                   z=DDM5$z[i],
+                                   v=DDM5$v2[i]), cond=1)
+    
+    parm_recov <- rbind(parm_recov_s1, parm_recov_s2)
+    parm_recov.both <- list(subset(parm_recov, cond==0), subset(parm_recov, cond==1))
+    
+    
+    sim <- optim(par=p_ddm5, f=ll_diffusion, dat=parm_recov.both, method="Nelder-Mead", control = c(maxit = 2000))
+    
+    parms <- sim$par
+    DDM5[i,"p.acc"] <- (table(parm_recov$cond, parm_recov$resp)[2,2] + table(parm_recov$cond, parm_recov$resp)[1,1]) / nrow(parm_recov)
+    DDM5[i,"p.M_rt"] <- mean(parm_recov$rt)
+    DDM5[i,"p.a"] <- parms["a"]
+    DDM5[i,"p.t0"] <- parms["t0"]
+    DDM5[i,"p.v1"] <- parms["v1"]
+    DDM5[i,"p.v2"] <- parms["v2"]
+    DDM5[i, "p.z"] <- parms["z"] / parms["a"]
+    DDM5[i, "p.converge"] <- sim$convergence
+  
+  }
+  
+  ddm_list <- append(ddm_list, list(DDM5))  
+  
+}
+
+```
+
+### merge indivudal dfs
+
+```{r}
+rtdist_df <- do.call(rbind, ddm_list)
+
+sum(rtdist_df$converge/nrow(rtdist_df))
+sum(rtdist_df$p.converge/nrow(rtdist_df))
+
+write_csv(rtdist_df, "Data/clean_data/ddm_df.csv")
+```
+
+### correlation between estimated and recovered parameters
+
+```{r}
+recov_cor <- data.frame(
+  parameter = c("acc", "M.rt", "a", "t0", "v1", "v2", "z"),
+  corr = c(cor(rtdist_df$acc, rtdist_df$p.acc),   
+           cor(rtdist_df$M_rt, rtdist_df$p.M_rt),
+           cor(rtdist_df$a, rtdist_df$p.a),   # boundary / speed-acc trade-off
+           cor(rtdist_df$t0, rtdist_df$p.t0),   # non-decision time
+           cor(rtdist_df$v1, rtdist_df$p.v1),   # drift rate response non-target 0
+           cor(rtdist_df$v2, rtdist_df$p.v2),   # drift rate response target 1
+           cor(rtdist_df$z, rtdist_df$p.z)   # bias
+  )
+)
+```
+
+------------------------------------------------------------------------
+
+# Group level analyses
+
+```{r}
+rtdist_df <- read_csv("Data/clean_data/ddm_df.csv", show_col_types = FALSE)
+```
+
+
+```{r}
+main_df <- rtdist_df[,c("ID","condition", "a","z","v1","v2")]
+main_df$CL <- factor(ifelse(grepl("low", main_df$condition),
+                      "low", "high"), levels = c("low","high"))
+main_df$Eval <- factor(ifelse(grepl("0", main_df$condition),
+                      0, 1))
+levels(main_df$CL); levels(main_df$Eval)
+```
+
+## Speed-accuracy trade-off (boundary a)
+
+```{r}
+m1 <- lmer(a ~ CL*Eval + (1|ID), data = main_df, REML = T)
+m2 <- lmer(a ~ CL+Eval + (1|ID), data = main_df, REML = T)
+AIC(m1)-AIC(m2)
+BIC(m1)-BIC(m2)
+
+m3 <- lmer(a ~ z + v1 + v2 + CL+Eval + (1|ID), data = main_df, REML = T)
+AIC(m3)-AIC(m2)
+BIC(m3)-BIC(m2)
+
+
+summary(m2)
+```
+
+```{r, fig.width=7, fig.height=5}
+emm_mod <- lmer(a ~ CL*Eval + (1|ID), data = main_df, REML = T)
+emm <- estimate_means(emm_mod, ~CL*Eval)
+
+plot_a <- ggplot(emm, aes(x = Eval, y = Mean, group = factor(CL), color=factor(CL),shape=CL, linetype = factor(CL))) +
+  geom_point(position = position_dodge(width = 0.2), size = 2.5) +
+  geom_line(position = position_dodge(width = 0.2), linewidth = 0.5) +
+  geom_errorbar(aes(ymin=CI_low, ymax=CI_high), width=.2,
+                position=position_dodge(0.2),linewidth=0.35,linetype=1)+
+  labs(x = "Social Evaluation", y = "a (Boundary)",
+       color = "Cognitive Load", shape="Cognitive Load", linetype="Cognitive Load") +
+  
+  scale_x_discrete(labels = c("control", "evaluation"))+
+  
+  theme_classic() +
+
+  scale_shape_manual(values = c(15, 19),
+                     labels = c("low", "high")) +  # Use square for H0 and circle for H1
+  scale_color_manual(values = c("lightskyblue4", "lightsalmon"),
+                     labels = c("low", "high")) +  # Orange color for H0 and dark green for H1
+  scale_linetype_manual(values = c(1,2),
+                       labels = c("low", "high")) +
+  
+  #theme_classic() +
+  theme(legend.text = element_text(size = 8),
+        axis.title.x = element_text(vjust = -3),
+        axis.title.y = element_text(vjust = 3),
+        plot.margin = margin(b = 15, l=15))
+
+```
+
+No differences in speed-accuracy trade-off
+
+## Bias
+
+```{r}
+m1 <- lmer(z ~ CL*Eval + (1|ID), data = main_df, REML = T)
+m2 <- lmer(z ~ CL+Eval + (1|ID), data = main_df, REML = T)
+AIC(m1)-AIC(m2)
+BIC(m1)-BIC(m2)
+
+m3 <- lmer(z ~ a + v1 + v2 + CL+Eval + (1|ID), data = main_df, REML = T)
+AIC(m3)-AIC(m2)
+BIC(m3)-BIC(m2)
+
+
+summary(m3)
+```
+
+```{r}
+emm_mod <- lmer(z ~ CL*Eval + (1|ID), data = main_df, REML = T)
+emm <- estimate_means(emm_mod, ~CL*Eval)
+
+plot_z <- ggplot(emm, aes(x = Eval, y = Mean, group = factor(CL), color=factor(CL),shape=CL, linetype = factor(CL))) +
+  geom_point(position = position_dodge(width = 0.2), size = 2.5) +
+  geom_line(position = position_dodge(width = 0.2), linewidth = 0.5) +
+  geom_errorbar(aes(ymin=CI_low, ymax=CI_high), width=.2,
+                position=position_dodge(0.2),linewidth=0.35,linetype=1)+
+  labs(x = "Social Evaluation", y = "z (Bias)",
+       color = "Cognitive Load", shape="Cognitive Load", linetype="Cognitive Load") +
+  
+  scale_x_discrete(labels = c("control", "evaluation"))+
+  
+  theme_classic() +
+
+  scale_shape_manual(values = c(15, 19),
+                     labels = c("low", "high")) +  # Use square for H0 and circle for H1
+  scale_color_manual(values = c("lightskyblue4", "lightsalmon"),
+                     labels = c("low", "high")) +  # Orange color for H0 and dark green for H1
+  scale_linetype_manual(values = c(1,2),
+                       labels = c("low", "high")) +
+  
+  #theme_classic() +
+  theme(legend.text = element_text(size = 8),
+        axis.title.x = element_text(vjust = -3),
+        axis.title.y = element_text(vjust = 3),
+        plot.margin = margin(b = 15, l=15))
+
+```
+
+Significant differences between Evaluation conditions
+
+## v1 (information accumulation speed for non-target responses)
+
+```{r}
+m1 <- lmer(v1 ~ CL*Eval + (1|ID), data = main_df, REML = T)
+m2 <- lmer(v1 ~ CL+Eval + (1|ID), data = main_df, REML = T)
+AIC(m1)-AIC(m2)
+BIC(m1)-BIC(m2)
+
+m3 <- lmer(v1 ~ a + z + v2 + CL+Eval + (1|ID), data = main_df, REML = T)
+AIC(m3)-AIC(m2)
+BIC(m3)-BIC(m2)
+
+
+summary(m3)
+```
+
+```{r}
+emm_mod <- lmer(v1 ~ a + z + v2 + CL*Eval + (1|ID), data = main_df, REML = T)
+emm <- estimate_means(emm_mod, ~CL*Eval)
+
+plot_v1 <- ggplot(emm, aes(x = Eval, y = Mean, group = factor(CL), color=factor(CL),shape=CL, linetype = factor(CL))) +
+  geom_point(position = position_dodge(width = 0.2), size = 2.5) +
+  geom_line(position = position_dodge(width = 0.2), linewidth = 0.5) +
+  geom_errorbar(aes(ymin=CI_low, ymax=CI_high), width=.2,
+                position=position_dodge(0.2),linewidth=0.35,linetype=1)+
+  labs(x = "Social Evaluation", y = "v1 (Drift rate)",
+       color = "Cognitive Load", shape="Cognitive Load", linetype="Cognitive Load") +
+  
+  scale_x_discrete(labels = c("control", "evaluation"))+
+  
+  theme_classic() +
+
+  scale_shape_manual(values = c(15, 19),
+                     labels = c("low", "high")) +  # Use square for H0 and circle for H1
+  scale_color_manual(values = c("lightskyblue4", "lightsalmon"),
+                     labels = c("low", "high")) +  # Orange color for H0 and dark green for H1
+  scale_linetype_manual(values = c(1,2),
+                       labels = c("low", "high")) +
+  
+  #theme_classic() +
+  theme(legend.text = element_text(size = 8),
+        axis.title.x = element_text(vjust = -3),
+        axis.title.y = element_text(vjust = 3),
+        plot.margin = margin(b = 15, l=15))
+
+```
+
+## v2 (information accumulation speed for target responses)
+
+```{r}
+m1 <- lmer(v2 ~ CL*Eval + (1|ID), data = main_df, REML = T)
+m2 <- lmer(v2 ~ CL+Eval + (1|ID), data = main_df, REML = T)
+AIC(m1)-AIC(m2)
+BIC(m1)-BIC(m2)
+
+m3 <- lmer(v2 ~ a + z + v1 + CL+Eval + (1|ID), data = main_df, REML = T)
+AIC(m3)-AIC(m2)
+BIC(m3)-BIC(m2)
+
+
+summary(m3)
+```
+
+```{r}
+emm_mod <- lmer(v2 ~ a + z + v1 + CL*Eval + (1|ID), data = main_df, REML = T)
+emm <- estimate_means(emm_mod, ~CL*Eval)
+
+plot_v2 <- ggplot(emm, aes(x = Eval, y = Mean, group = factor(CL), color=factor(CL),shape=CL, linetype = factor(CL))) +
+  geom_point(position = position_dodge(width = 0.2), size = 2.5) +
+  geom_line(position = position_dodge(width = 0.2), linewidth = 0.5) +
+  geom_errorbar(aes(ymin=CI_low, ymax=CI_high), width=.2,
+                position=position_dodge(0.2),linewidth=0.35,linetype=1)+
+  labs(x = "Social Evaluation", y = "v2 (Drift rate)",
+       color = "Cognitive Load", shape="Cognitive Load", linetype="Cognitive Load") +
+  
+  scale_x_discrete(labels = c("control", "evaluation"))+
+  
+  theme_classic() +
+
+  scale_shape_manual(values = c(15, 19),
+                     labels = c("low", "high")) +  # Use square for H0 and circle for H1
+  scale_color_manual(values = c("lightskyblue4", "lightsalmon"),
+                     labels = c("low", "high")) +  # Orange color for H0 and dark green for H1
+  scale_linetype_manual(values = c(1,2),
+                       labels = c("low", "high")) +
+  
+  #theme_classic() +
+  theme(legend.text = element_text(size = 8),
+        axis.title.x = element_text(vjust = -3),
+        axis.title.y = element_text(vjust = 3),
+        plot.margin = margin(b = 15, l=15))
+
+```
+
+**merge images**
+
+```{r, fig.width=7, fig.height=5}
+
+combined_plot <- ((plot_a | plot_z) / (plot_v1 | plot_v2)) +
+  plot_annotation(tag_levels = 'A', tag_suffix = ")") +
+  plot_layout(guides = "collect") &
+  theme(legend.position='bottom')
+
+# Display the combined plot
+print(combined_plot)
+ggsave("TablesFigures/Figure S1 - DDM_results.jpeg",dpi=600, w= 7, h = 5)
+```
