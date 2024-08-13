@@ -309,13 +309,13 @@ model_parameters(perform.rt.m.uns)
 ### Mental Demand
 
 ```{r}
+type3 <- list(CL = contr.sum, Evaluation = contr.sum)
 mental.m <- lmer(Mental ~ CL*Evaluation + (CL+Evaluation|ID),
            data=agg_df, REML=T, contrasts=type3)
 aov_mental <- anova(mental.m,type=3)
 aov_mental
-epsilon_squared(aov_mental)
-effectsize(m1)
-model_parameters(m1)
+epsilon_squared(aov_mental, alternative = "two.sided")
+model_parameters(aov_mental)
 
 emm <- estimate_means(mental.m, ~CL*Evaluation)
 
@@ -686,13 +686,33 @@ tab <- table(experiment_data$dominant_response,experiment_data$Evaluation)
 colnames(tab) <- c("control","evaluation")
 print(tab)
 
+cntrl.0_eval.0 <- min(c(tab["0","control"],tab["0","evaluation"]))
+cntrl.0_eval.1 <- abs(tab["0","control"] - tab["0","evaluation"])
+cntrl.1_eval.0 <- abs(tab["1","control"] - tab["1","evaluation"])
+cntrl.1_eval.1 <- min(c(tab["1","control"],tab["1","evaluation"]))
+
+xtab <- as.table(
+  rbind(c(cntrl.0_eval.0, cntrl.0_eval.1), c(cntrl.1_eval.0,cntrl.1_eval.1))
+)
+dimnames(xtab) <- list(
+  control = c("0", "1"),
+  evaluation = c("0", "1")
+)
+print(xtab)
 # Perform the chi-square test
-chi_test <- chisq.test(tab)
+chi_test <- mcnemar_test(xtab)
 
 # View the results
 print(chi_test)
 ```
 
+```{r}
+
+
+
+
+
+```
 
 
 
