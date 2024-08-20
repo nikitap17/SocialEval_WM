@@ -637,7 +637,6 @@ incl_list3back <- unique(new_df$ID[new_df$CL == "high" & new_df$diff_err > 0])
 sum(incl_list2back %in% incl_list3back) # N of participants who performed better in low CL and worse in high CL (as hypothesised)
 ```
 
-
 ### Adversarial Testing: Generalized Drive Theory
 
 *This theory assumes that dominant responses are enhanced by exposure to social presence. The predominant response in the n-back tasks is indicating a non-target, as 66% of all trials are non-targets. Accordingly, we should witness an increase in non-target responses.*

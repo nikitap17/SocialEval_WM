@@ -11,6 +11,10 @@ library(lme4)
 library(lmerTest)
 library(modelbased)
 library(patchwork)
+library(effectsize)
+library(parameters)
+library(rempsyc)
+library(flextable)
 ```
 
 ### Load data
@@ -191,6 +195,14 @@ recov_cor <- data.frame(
            cor(rtdist_df$z, rtdist_df$p.z)   # bias
   )
 )
+
+table <- nice_table(recov_cor, 
+                    title = c("Table S4", "Recovery Study for Estimated DDM Parameters"),
+                    note = c(
+                      "DDM = drift diffusion model; r > .75 is considered good, r > .95 is consideered excellent. Note that the correlation for the bias parameter z suggests an insufficient reliability."
+                    ))
+
+save_as_docx(table, path = "TablesFigures/Table S4 - DDM recov study.docx")
 ```
 
 ------------------------------------------------------------------------
@@ -227,6 +239,21 @@ BIC(m3)-BIC(m2)
 model_parameters(m2)
 # standardised
 effectsize(m2)
+
+
+
+```
+
+```{r}
+table <- model_parameters(lmer(scale(a) ~ CL+Eval + (1|ID), data = main_df, REML = T))[1:3,] %>% dplyr::select(c("Parameter","Coefficient", "SE", "CI_low", "CI_high", "p"))
+
+table <- nice_table(table, 
+                    title = c("Table S5", "LMM a"),
+                    note = c(
+                      "* p < .05, ** p < .01, *** p < .001. CL = Cognitive Load; CI = Confidence Interval."
+                    ))
+
+save_as_docx(table, path = "TablesFigures/Table S5 - DDM a.docx")
 ```
 
 ```{r, fig.width=7, fig.height=5}
@@ -279,6 +306,18 @@ summary(m3)
 ```
 
 ```{r}
+table <- model_parameters(lmer(scale(z) ~ CL*Eval + (1|ID), data = main_df, REML = T))[1:3,] %>% dplyr::select(c("Parameter","Coefficient", "SE", "CI_low", "CI_high", "p"))
+
+table <- nice_table(table, 
+                    title = c("Table S5", "LMM z"),
+                    note = c(
+                      "* p < .05, ** p < .01, *** p < .001. CL = Cognitive Load; CI = Confidence Interval."
+                    ))
+
+save_as_docx(table, path = "TablesFigures/Table S5 - DDM z.docx")
+```
+
+```{r}
 emm_mod <- lmer(z ~ CL*Eval + (1|ID), data = main_df, REML = T)
 emm <- estimate_means(emm_mod, ~CL*Eval)
 
@@ -328,6 +367,18 @@ summary(m3)
 ```
 
 ```{r}
+table <- model_parameters(lmer(scale(v1) ~ a + z + v2 + CL*Eval + (1|ID), data = main_df, REML = T)) %>% filter(Parameter %in% c("(Intercept)", "CLhigh", "Eval1")) %>% dplyr::select(c("Parameter","Coefficient", "SE", "CI_low", "CI_high", "p"))
+
+table <- nice_table(table, 
+                    title = c("Table S5", "LMM v1"),
+                    note = c(
+                      "* p < .05, ** p < .01, *** p < .001. CL = Cognitive Load; CI = Confidence Interval."
+                    ))
+
+save_as_docx(table, path = "TablesFigures/Table S5 - DDM v1.docx")
+```
+
+```{r}
 emm_mod <- lmer(v1 ~ a + z + v2 + CL*Eval + (1|ID), data = main_df, REML = T)
 emm <- estimate_means(emm_mod, ~CL*Eval)
 
@@ -372,6 +423,18 @@ BIC(m3)-BIC(m2)
 
 
 summary(m3)
+```
+
+```{r}
+table <- model_parameters(lmer(scale(v2) ~ a + z + v1 + CL*Eval + (1|ID), data = main_df, REML = T)) %>% filter(Parameter %in% c("(Intercept)", "CLhigh", "Eval1")) %>% dplyr::select(c("Parameter","Coefficient", "SE", "CI_low", "CI_high", "p"))
+
+table <- nice_table(table, 
+                    title = c("Table S5", "LMM v2"),
+                    note = c(
+                      "* p < .05, ** p < .01, *** p < .001. CL = Cognitive Load; CI = Confidence Interval."
+                    ))
+
+save_as_docx(table, path = "TablesFigures/Table S5 - DDM v2.docx")
 ```
 
 ```{r}

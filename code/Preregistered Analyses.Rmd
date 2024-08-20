@@ -214,17 +214,17 @@ save_as_docx(table, path = "TablesFigures/Table S1 - Model Comparison RT.docx")
 Get nice table for extended LMM
 
 ```{r}
-t_ <- model_parameters(RT_mod)[1:6,1:9] %>% dplyr::select(-"CI")
+t_ <- model_parameters(RT_mod)[1:6,] %>% dplyr::select(c("Coefficient", "SE", "CI_low", "CI_high", "p"))
 
 # Extract unstandardized Beta
 Beta_m <- lmer(RT_Raw ~ block + trial_block + CL+Evaluation + (CL+Evaluation|ID),
                data=main_df, REML = T)
 t_Beta <- model_parameters(Beta_m)[1:6,] %>% dplyr::select("Parameter", "Coefficient")
-colnames(t_Beta)[2] <- "B"
-table <- cbind(t_Beta, t_)[,-3]
+colnames(t_Beta)[2] <- "unstB"
+table <- cbind(t_Beta, t_)
 
 table <- nice_table(table, 
-                    title = c("Table X", "No Interaction Linear Mixed Model"),
+                    title = c("Table A3", "No Interaction Linear Mixed Model"),
                     note = c(
                       "* p < .05, ** p < .01, *** p < .001. CL = Cognitive Load; CI = Confidence Interval."
                     ))
