@@ -363,14 +363,15 @@ rt_plot <-raincloud_plot(data = rt_df$data,
 *Merge plots*
 
 ```{r, fig.width=10, fig.height=5}
-combined_plot <- (errors_plot | rt_plot) +
-  plot_annotation(tag_levels = 'A', tag_suffix = ")") +
+combined_plot <- (rt_plot | errors_plot) +
+  plot_annotation(tag_levels = 'A') +
   plot_layout(guides = "collect") &
-  theme(legend.position='bottom')
+  theme(plot.tag = element_text(face = "bold"),
+        legend.position='bottom')
 
 # Display the combined plot
 print(combined_plot)
-ggsave("TablesFigures/Figure A1 - WM Performance Raincloud_plot.jpeg",dpi=600, w= 10, h = 5)
+ggsave("TablesFigures/Figure A1 - WM Performance Raincloud_plot.jpeg",dpi=600, w= 9, h = 4)
 ```
 
 ## Perceived Stress (ADES)
@@ -421,13 +422,14 @@ distress_plot <-raincloud_plot(data = distress_df$data,
 
 ```{r, fig.width=10, fig.height=5}
 combined_plot <- (eustress_plot | distress_plot) +
-  plot_annotation(tag_levels = 'A', tag_suffix = ")") +
+  plot_annotation(tag_levels = 'A') +
   plot_layout(guides = "collect") &
-  theme(legend.position='bottom')
+  theme(plot.tag = element_text(face = "bold"),
+        legend.position='bottom')
 
 # Display the combined plot
 print(combined_plot)
-ggsave("TablesFigures/Figure A2 - ADES Raincloud_plot.jpeg",dpi=600, w= 10, h = 5)
+ggsave("TablesFigures/Figure A2 - ADES Raincloud_plot.jpeg",dpi=600, w= 9, h = 4)
 ```
 
 ## Mental Demand

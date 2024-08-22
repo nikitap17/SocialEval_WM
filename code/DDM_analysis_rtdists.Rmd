@@ -226,19 +226,17 @@ levels(main_df$CL); levels(main_df$Eval)
 ## Speed-accuracy trade-off (boundary a)
 
 ```{r}
-m1 <- lmer(a ~ CL*Eval + (1|ID), data = main_df, REML = T)
-m2 <- lmer(a ~ CL+Eval + (1|ID), data = main_df, REML = T)
+m1 <- lmer(scale(a) ~ CL*Eval + (1|ID), data = main_df, REML = T)
+m2 <- lmer(scale(a) ~ CL+Eval + (1|ID), data = main_df, REML = T)
 AIC(m1)-AIC(m2)
 BIC(m1)-BIC(m2)
 
-m3 <- lmer(a ~ z + v1 + v2 + CL+Eval + (1|ID), data = main_df, REML = T)
+m3 <- lmer(scale(a) ~ z + v1 + v2 + CL+Eval + (1|ID), data = main_df, REML = T)
 AIC(m3)-AIC(m2)
 BIC(m3)-BIC(m2)
 
 # unstandardized
 model_parameters(m2)
-# standardised
-effectsize(m2)
 
 
 
@@ -257,7 +255,7 @@ save_as_docx(table, path = "TablesFigures/Table S5 - DDM a.docx")
 ```
 
 ```{r, fig.width=7, fig.height=5}
-emm_mod <- lmer(a ~ CL*Eval + (1|ID), data = main_df, REML = T)
+emm_mod <- lmer(scale(a) ~ CL*Eval + (1|ID), data = main_df, REML = T)
 emm <- estimate_means(emm_mod, ~CL*Eval)
 
 plot_a <- ggplot(emm, aes(x = Eval, y = Mean, group = factor(CL), color=factor(CL),shape=CL, linetype = factor(CL))) +
@@ -292,21 +290,21 @@ No differences in speed-accuracy trade-off
 ## Bias
 
 ```{r}
-m1 <- lmer(z ~ CL*Eval + (1|ID), data = main_df, REML = T)
-m2 <- lmer(z ~ CL+Eval + (1|ID), data = main_df, REML = T)
+m1 <- lmer(scale(z) ~ CL*Eval + (1|ID), data = main_df, REML = T)
+m2 <- lmer(scale(z) ~ CL+Eval + (1|ID), data = main_df, REML = T)
 AIC(m1)-AIC(m2)
 BIC(m1)-BIC(m2)
 
-m3 <- lmer(z ~ a + v1 + v2 + CL+Eval + (1|ID), data = main_df, REML = T)
+m3 <- lmer(scale(z) ~ scale(a) + scale(v1) + scale(v2) + CL+Eval + (1|ID), data = main_df, REML = T)
 AIC(m3)-AIC(m2)
 BIC(m3)-BIC(m2)
 
+model_parameters(m3)
 
-summary(m3)
 ```
 
 ```{r}
-table <- model_parameters(lmer(scale(z) ~ CL*Eval + (1|ID), data = main_df, REML = T))[1:3,] %>% dplyr::select(c("Parameter","Coefficient", "SE", "CI_low", "CI_high", "p"))
+table <- model_parameters(m3) %>% filter(Parameter %in% c("(Intercept)", "CLhigh", "Eval1")) %>% dplyr::select(c("Parameter","Coefficient", "SE", "CI_low", "CI_high", "p"))
 
 table <- nice_table(table, 
                     title = c("Table S5", "LMM z"),
@@ -318,7 +316,7 @@ save_as_docx(table, path = "TablesFigures/Table S5 - DDM z.docx")
 ```
 
 ```{r}
-emm_mod <- lmer(z ~ CL*Eval + (1|ID), data = main_df, REML = T)
+emm_mod <- lmer(scale(z) ~ scale(a) + scale(v1) + scale(v2) + CL*Eval + (1|ID), data = main_df, REML = T)
 emm <- estimate_means(emm_mod, ~CL*Eval)
 
 plot_z <- ggplot(emm, aes(x = Eval, y = Mean, group = factor(CL), color=factor(CL),shape=CL, linetype = factor(CL))) +
@@ -353,12 +351,12 @@ Significant differences between Evaluation conditions
 ## v1 (information accumulation speed for non-target responses)
 
 ```{r}
-m1 <- lmer(v1 ~ CL*Eval + (1|ID), data = main_df, REML = T)
-m2 <- lmer(v1 ~ CL+Eval + (1|ID), data = main_df, REML = T)
+m1 <- lmer(scale(v1) ~ CL*Eval + (1|ID), data = main_df, REML = T)
+m2 <- lmer(scale(v1) ~ CL+Eval + (1|ID), data = main_df, REML = T)
 AIC(m1)-AIC(m2)
 BIC(m1)-BIC(m2)
 
-m3 <- lmer(v1 ~ a + z + v2 + CL+Eval + (1|ID), data = main_df, REML = T)
+m3 <- lmer(scale(v1) ~ scale(a) + scale(z) + scale(v2) + CL+Eval + (1|ID), data = main_df, REML = T)
 AIC(m3)-AIC(m2)
 BIC(m3)-BIC(m2)
 
@@ -367,7 +365,7 @@ summary(m3)
 ```
 
 ```{r}
-table <- model_parameters(lmer(scale(v1) ~ a + z + v2 + CL*Eval + (1|ID), data = main_df, REML = T)) %>% filter(Parameter %in% c("(Intercept)", "CLhigh", "Eval1")) %>% dplyr::select(c("Parameter","Coefficient", "SE", "CI_low", "CI_high", "p"))
+table <- model_parameters(m3) %>% filter(Parameter %in% c("(Intercept)", "CLhigh", "Eval1")) %>% dplyr::select(c("Parameter","Coefficient", "SE", "CI_low", "CI_high", "p"))
 
 table <- nice_table(table, 
                     title = c("Table S5", "LMM v1"),
@@ -379,7 +377,7 @@ save_as_docx(table, path = "TablesFigures/Table S5 - DDM v1.docx")
 ```
 
 ```{r}
-emm_mod <- lmer(v1 ~ a + z + v2 + CL*Eval + (1|ID), data = main_df, REML = T)
+emm_mod <- lmer(scale(v1) ~ scale(a) + scale(z) + scale(v2) + CL*Eval + (1|ID), data = main_df, REML = T)
 emm <- estimate_means(emm_mod, ~CL*Eval)
 
 plot_v1 <- ggplot(emm, aes(x = Eval, y = Mean, group = factor(CL), color=factor(CL),shape=CL, linetype = factor(CL))) +
@@ -412,12 +410,12 @@ plot_v1 <- ggplot(emm, aes(x = Eval, y = Mean, group = factor(CL), color=factor(
 ## v2 (information accumulation speed for target responses)
 
 ```{r}
-m1 <- lmer(v2 ~ CL*Eval + (1|ID), data = main_df, REML = T)
-m2 <- lmer(v2 ~ CL+Eval + (1|ID), data = main_df, REML = T)
+m1 <- lmer(scale(v2) ~ CL*Eval + (1|ID), data = main_df, REML = T)
+m2 <- lmer(scale(v2) ~ CL+Eval + (1|ID), data = main_df, REML = T)
 AIC(m1)-AIC(m2)
 BIC(m1)-BIC(m2)
 
-m3 <- lmer(v2 ~ a + z + v1 + CL+Eval + (1|ID), data = main_df, REML = T)
+m3 <- lmer(scale(v2) ~ scale(a) + scale(z) + scale(v1) + CL+Eval + (1|ID), data = main_df, REML = T)
 AIC(m3)-AIC(m2)
 BIC(m3)-BIC(m2)
 
@@ -426,7 +424,7 @@ summary(m3)
 ```
 
 ```{r}
-table <- model_parameters(lmer(scale(v2) ~ a + z + v1 + CL*Eval + (1|ID), data = main_df, REML = T)) %>% filter(Parameter %in% c("(Intercept)", "CLhigh", "Eval1")) %>% dplyr::select(c("Parameter","Coefficient", "SE", "CI_low", "CI_high", "p"))
+table <- model_parameters(m3) %>% filter(Parameter %in% c("(Intercept)", "CLhigh", "Eval1")) %>% dplyr::select(c("Parameter","Coefficient", "SE", "CI_low", "CI_high", "p"))
 
 table <- nice_table(table, 
                     title = c("Table S5", "LMM v2"),
@@ -438,7 +436,7 @@ save_as_docx(table, path = "TablesFigures/Table S5 - DDM v2.docx")
 ```
 
 ```{r}
-emm_mod <- lmer(v2 ~ a + z + v1 + CL*Eval + (1|ID), data = main_df, REML = T)
+emm_mod <- lmer(scale(v2) ~ scale(a) + scale(z) + scale(v1) + CL*Eval + (1|ID), data = main_df, REML = T)
 emm <- estimate_means(emm_mod, ~CL*Eval)
 
 plot_v2 <- ggplot(emm, aes(x = Eval, y = Mean, group = factor(CL), color=factor(CL),shape=CL, linetype = factor(CL))) +
@@ -473,9 +471,10 @@ plot_v2 <- ggplot(emm, aes(x = Eval, y = Mean, group = factor(CL), color=factor(
 ```{r, fig.width=7, fig.height=5}
 
 combined_plot <- ((plot_a | plot_z) / (plot_v1 | plot_v2)) +
-  plot_annotation(tag_levels = 'A', tag_suffix = ")") +
+  plot_annotation(tag_levels = 'A') +
   plot_layout(guides = "collect") &
-  theme(legend.position='bottom')
+  theme(plot.tag = element_text(face = "bold"),
+        legend.position='bottom')
 
 # Display the combined plot
 print(combined_plot)

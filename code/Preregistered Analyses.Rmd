@@ -66,7 +66,7 @@ m_aov3 <- lmer(RT_Raw ~ CL*Evaluation + (CL+Evaluation|ID),
 
 aov3 <- anova(m_aov3)
 aov3
-eta_squared(aov3,partial=T, alternative = "two.sided")
+#eta_squared(aov3,partial=T, alternative = "two.sided")
 epsilon_aov3 <- epsilon_squared(aov3, partial=T, alternative = "two.sided")
 
 ##partial eta/omega/epsilon is appropriate, if all variables in a design are manipulated
@@ -254,7 +254,7 @@ plot_emm_rt <- ggplot(emm, aes(x = Evaluation, y = Mean, group = factor(CL), col
 
   scale_shape_manual(values = c(15, 19),
                      labels = c("low", "high")) +  # Use square for H0 and circle for H1
-  scale_color_manual(values = c("#008080", "#E34234"),
+  scale_color_manual(values = c("deepskyblue4", "darkorange"),
                      labels = c("low", "high")) +  # Orange color for H0 and dark green for H1
   scale_linetype_manual(values = c(1,2),
                        labels = c("low", "high")) +
@@ -576,7 +576,7 @@ plot_emm_errors <- ggplot(emm_eu, aes(x = Evaluation, y = Probability, group = C
   
   scale_shape_manual(values = c(15, 19),
                      labels = c("low", "high")) +
-  scale_color_manual(values = c("#008080", "#E34234"),
+  scale_color_manual(values = c("deepskyblue4", "darkorange"),
                      labels = c("low", "high")) +
   scale_linetype_manual(values=c(1,2),
                         labels=c("low","high")) +
@@ -661,9 +661,10 @@ ggplot(emm_eu, aes(x = trial_block, y = Probability, group = block, shape= block
 
 ```{r, fig.width=7, fig.height=4.5}
 combined_plot <- (plot_emm_rt | plot_emm_errors) +
-  plot_annotation(tag_levels = 'A', tag_suffix = ")") +
+  plot_annotation(tag_levels = 'A') +
   plot_layout(guides = "collect") &
-  theme(legend.position='bottom')
+  theme(plot.tag = element_text(face = "bold"),
+        legend.position='bottom')
 
 # Display the combined plot
 print(combined_plot)
