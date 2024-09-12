@@ -337,6 +337,8 @@ errors_plot <-raincloud_plot(data = errors_df$data,
                boxplot = T,
                between_annotations = "bottom") +
   xlab("Cognitive Load") + ylab("Errors")
+
+errors_plot
 ```
 
 Reaction Time
@@ -362,7 +364,7 @@ rt_plot <-raincloud_plot(data = rt_df$data,
 
 *Merge plots*
 
-```{r, fig.width=10, fig.height=5}
+```{r, fig.width=8, fig.height=4}
 combined_plot <- (rt_plot | errors_plot) +
   plot_annotation(tag_levels = 'A') +
   plot_layout(guides = "collect") &

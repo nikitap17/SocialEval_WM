@@ -1,4 +1,5 @@
-
+meanp_size = 1.5
+p_size = 1
 raincloud_prepare_data <- function(data, id_variable, y_variable, within_factor, between_factor, within_levels, between_levels, jit_distance = 0.09, jit_seed = 2){
   d <- data.frame("id" = data[,id_variable],
                   "y_axis" = data[, y_variable],
@@ -103,9 +104,9 @@ raincloud_plot <- function(data, # data as preprocessed with raincloud_prepare_d
       x_tick_means_2 <- c(2.87, 4.15)
       
       raincloud <- ggplot(data = data, aes(y = y_axis)) +
-        geom_point(data = data %>% filter(x_axis %in% c("1","2")), aes(x = jit, color = as.factor(x_axis)), size = 1.5, alpha = .6) +
-        geom_point(data = data %>% filter(x_axis == "3"), aes(x = jit), color = colors[1], size = 1.5, alpha = .6) +
-        geom_point(data = data %>% filter(x_axis == "4"), aes(x = jit), color = colors[2], size = 1.5, alpha = .6) +
+        geom_point(shape = 16, data = data %>% filter(x_axis %in% c("1","2")), aes(x = jit, color = as.factor(x_axis)), size = p_size, alpha = .6) +
+        geom_point(shape = 16, data = data %>% filter(x_axis == "3"), aes(x = jit), color = colors[1], size = p_size, alpha = .6) +
+        geom_point(shape = 16, data = data %>% filter(x_axis == "4"), aes(x = jit), color = colors[2], size = p_size, alpha = .6) +
         
         geom_line(data = data %>% filter(x_axis %in% c("1", "2")), aes(x = jit, group = id), color = 'lightgray', alpha = .3) +
         geom_line(data = data %>% filter(x_axis %in% c("3", "4")), aes(x = jit, group = id), color = 'lightgray', alpha = .3) +
@@ -113,13 +114,13 @@ raincloud_plot <- function(data, # data as preprocessed with raincloud_prepare_d
         geom_line(data = summary_df_l, aes(x = x_tick_means_1, y = score_mean), color = 'gray', linewidth = .8) +
         geom_line(data = summary_df_h, aes(x = x_tick_means_2, y = score_mean), color = 'gray', linewidth = .8) +
         
-        geom_point(data = data %>% filter(x_axis == "1"), aes(x = x_axis, y = summary_df$score_mean[1]), position = position_nudge(x = -.15), color = colors[1], alpha = .6, size = 2.5) +
+        geom_point(shape = 16, data = data %>% filter(x_axis == "1"), aes(x = x_axis, y = summary_df$score_mean[1]), position = position_nudge(x = -.15), color = colors[1], alpha = .6, size = meanp_size) +
         geom_errorbar(data = data %>% filter(x_axis == "1"), aes(x = x_axis, y = summary_df$score_mean[1], ymin = summary_df$score_mean[1] - summary_df$ci[1], ymax = summary_df$score_mean[1] + summary_df$ci[1]), position = position_nudge(-.15), color = colors[1], width = 0.05, linewidth = 0.4, alpha = .6) +
-        geom_point(data = data %>% filter(x_axis == "2"), aes(x = x_axis, y = summary_df$score_mean[2]), position = position_nudge(x = .15), color = colors[2], alpha = .6, size = 2.5) +
+        geom_point(shape = 16, data = data %>% filter(x_axis == "2"), aes(x = x_axis, y = summary_df$score_mean[2]), position = position_nudge(x = .15), color = colors[2], alpha = .6, size = meanp_size) +
         geom_errorbar(data = data %>% filter(x_axis == "2"), aes(x = x_axis, y = summary_df$score_mean[2], ymin = summary_df$score_mean[2] - summary_df$ci[2], ymax = summary_df$score_mean[2] + summary_df$ci[2]), position = position_nudge(x = .15), color = colors[2], width = 0.05, linewidth = 0.4, alpha = .6) +
-        geom_point(data = data %>% filter(x_axis == "3"), aes(x = x_axis, y = summary_df$score_mean[3]), position = position_nudge(x = -.15), color = colors[1], alpha = .6, size = 2.5) +
+        geom_point(shape = 16, data = data %>% filter(x_axis == "3"), aes(x = x_axis, y = summary_df$score_mean[3]), position = position_nudge(x = -.15), color = colors[1], alpha = .6, size = meanp_size) +
         geom_errorbar(data = data %>% filter(x_axis == "3"), aes(x = x_axis, y = summary_df$score_mean[3], ymin = summary_df$score_mean[3] - summary_df$ci[3], ymax = summary_df$score_mean[3] + summary_df$ci[3]), position = position_nudge(-.15), color = colors[1], width = 0.05, linewidth = 0.4, alpha = .5) +
-        geom_point(data = data %>% filter(x_axis == "4"), aes(x = x_axis, y = summary_df$score_mean[4]), position = position_nudge(x = .15), color = colors[2], alpha = .6, size = 2.5) +
+        geom_point(shape = 16, data = data %>% filter(x_axis == "4"), aes(x = x_axis, y = summary_df$score_mean[4]), position = position_nudge(x = .15), color = colors[2], alpha = .6, size = meanp_size) +
         geom_errorbar(data = data %>% filter(x_axis == "4"), aes(x = x_axis, y = summary_df$score_mean[4], ymin = summary_df$score_mean[4] - summary_df$ci[4], ymax = summary_df$score_mean[4] + summary_df$ci[4]), position = position_nudge(.15), color = colors[2], width = 0.05, linewidth = 0.4, alpha = .5) +
         
         
@@ -172,11 +173,11 @@ raincloud_plot <- function(data, # data as preprocessed with raincloud_prepare_d
       x_tick_means_3 <- c(4.87 + dodge, 6.15 + dodge)
       
       raincloud <- ggplot(data = data, aes(y = y_axis)) +
-        geom_point(data = data %>% filter(x_axis %in% c("1","2")), aes(x = jit, color = as.factor(x_axis)), size = 1.5, alpha = .6) +
-        geom_point(data = data %>% filter(x_axis == "3"), aes(x = jit+dodge2), color = colors[1], size = 1.5, alpha = .6) +
-        geom_point(data = data %>% filter(x_axis == "4"), aes(x = jit+dodge2), color = colors[2], size = 1.5, alpha = .6) +
-        geom_point(data = data %>% filter(x_axis == "5"), aes(x = jit+dodge), color = colors[1], size = 1.5, alpha = .6) +
-        geom_point(data = data %>% filter(x_axis == "6"), aes(x = jit+dodge), color = colors[2], size = 1.5, alpha = .6) +
+        geom_point(shape = 16, data = data %>% filter(x_axis %in% c("1","2")), aes(x = jit, color = as.factor(x_axis)), size = p_size, alpha = .6) +
+        geom_point(shape = 16, data = data %>% filter(x_axis == "3"), aes(x = jit+dodge2), color = colors[1], size = p_size, alpha = .6) +
+        geom_point(shape = 16, data = data %>% filter(x_axis == "4"), aes(x = jit+dodge2), color = colors[2], size = p_size, alpha = .6) +
+        geom_point(shape = 16, data = data %>% filter(x_axis == "5"), aes(x = jit+dodge), color = colors[1], size = p_size, alpha = .6) +
+        geom_point(shape = 16, data = data %>% filter(x_axis == "6"), aes(x = jit+dodge), color = colors[2], size = p_size, alpha = .6) +
         
         geom_line(data = data %>% filter(x_axis %in% c("1", "2")), aes(x = jit+dodge1, group = id), color = 'lightgray', alpha = .3) +
         geom_line(data = data %>% filter(x_axis %in% c("3", "4")), aes(x = jit+dodge2, group = id), color = 'lightgray', alpha = .3) +
@@ -186,17 +187,17 @@ raincloud_plot <- function(data, # data as preprocessed with raincloud_prepare_d
         geom_line(data = summary_df_h, aes(x = x_tick_means_2, y = score_mean), color = 'gray', linewidth = .8) +
         geom_line(data = summary_df_3, aes(x = x_tick_means_3, y = score_mean), color = 'gray', linewidth = .8) +
         
-        geom_point(data = data %>% filter(x_axis == "1"), aes(x = x_axis+dodge1, y = summary_df$score_mean[1]), position = position_nudge(x = -.15), color = colors[1], alpha = .6, size = 2.5) +
+        geom_point(shape = 16, data = data %>% filter(x_axis == "1"), aes(x = x_axis+dodge1, y = summary_df$score_mean[1]), position = position_nudge(x = -.15), color = colors[1], alpha = .6, size = meanp_size) +
         geom_errorbar(data = data %>% filter(x_axis == "1"), aes(x = x_axis+dodge1, y = summary_df$score_mean[1], ymin = summary_df$score_mean[1] - summary_df$ci[1], ymax = summary_df$score_mean[1] + summary_df$ci[1]), position = position_nudge(-.15), color = colors[1], width = 0.05, linewidth = 0.4, alpha = .6) +
-        geom_point(data = data %>% filter(x_axis == "2"), aes(x = x_axis+dodge1, y = summary_df$score_mean[2]), position = position_nudge(x = .15), color = colors[2], alpha = .6, size = 2.5) +
+        geom_point(shape = 16, data = data %>% filter(x_axis == "2"), aes(x = x_axis+dodge1, y = summary_df$score_mean[2]), position = position_nudge(x = .15), color = colors[2], alpha = .6, size = meanp_size) +
         geom_errorbar(data = data %>% filter(x_axis == "2"), aes(x = x_axis+dodge1, y = summary_df$score_mean[2], ymin = summary_df$score_mean[2] - summary_df$ci[2], ymax = summary_df$score_mean[2] + summary_df$ci[2]), position = position_nudge(x = .15), color = colors[2], width = 0.05, linewidth = 0.4, alpha = .6) +
-        geom_point(data = data %>% filter(x_axis == "3"), aes(x = x_axis+dodge2, y = summary_df$score_mean[3]), position = position_nudge(x = -.15), color = colors[1], alpha = .6, size = 2.5) +
+        geom_point(shape = 16, data = data %>% filter(x_axis == "3"), aes(x = x_axis+dodge2, y = summary_df$score_mean[3]), position = position_nudge(x = -.15), color = colors[1], alpha = .6, size = meanp_size) +
         geom_errorbar(data = data %>% filter(x_axis == "3"), aes(x = x_axis+dodge2, y = summary_df$score_mean[3], ymin = summary_df$score_mean[3] - summary_df$ci[3], ymax = summary_df$score_mean[3] + summary_df$ci[3]), position = position_nudge(-.15), color = colors[1], width = 0.05, linewidth = 0.4, alpha = .5) +
-        geom_point(data = data %>% filter(x_axis == "4"), aes(x = x_axis+dodge2, y = summary_df$score_mean[4]), position = position_nudge(x = .15), color = colors[2], alpha = .6, size = 2.5) +
+        geom_point(shape = 16, data = data %>% filter(x_axis == "4"), aes(x = x_axis+dodge2, y = summary_df$score_mean[4]), position = position_nudge(x = .15), color = colors[2], alpha = .6, size = meanp_size) +
         geom_errorbar(data = data %>% filter(x_axis == "4"), aes(x = x_axis+dodge2, y = summary_df$score_mean[4], ymin = summary_df$score_mean[4] - summary_df$ci[4], ymax = summary_df$score_mean[4] + summary_df$ci[4]), position = position_nudge(.15), color = colors[2], width = 0.05, linewidth = 0.4, alpha = .5) +
-        geom_point(data = data %>% filter(x_axis == "5"), aes(x = x_axis + dodge, y = summary_df$score_mean[5]), position = position_nudge(x = -.15), color = colors[1], alpha = .6, size = 2.5) +
+        geom_point(shape = 16, data = data %>% filter(x_axis == "5"), aes(x = x_axis + dodge, y = summary_df$score_mean[5]), position = position_nudge(x = -.15), color = colors[1], alpha = .6, size = meanp_size) +
         geom_errorbar(data = data %>% filter(x_axis == "5"), aes(x = x_axis + dodge, y = summary_df$score_mean[5], ymin = summary_df$score_mean[5] - summary_df$ci[5], ymax = summary_df$score_mean[5] + summary_df$ci[5]), position = position_nudge(-.15), color = colors[1], width = 0.05, linewidth = 0.4, alpha = .5) +
-        geom_point(data = data %>% filter(x_axis == "6"), aes(x = x_axis + dodge, y = summary_df$score_mean[6]), position = position_nudge(x = .15), color = colors[2], alpha = .6, size = 2.5) +
+        geom_point(shape = 16, data = data %>% filter(x_axis == "6"), aes(x = x_axis + dodge, y = summary_df$score_mean[6]), position = position_nudge(x = .15), color = colors[2], alpha = .6, size = meanp_size) +
         geom_errorbar(data = data %>% filter(x_axis == "6"), aes(x = x_axis + dodge, y = summary_df$score_mean[6], ymin = summary_df$score_mean[6] - summary_df$ci[6], ymax = summary_df$score_mean[6] + summary_df$ci[6]), position = position_nudge(.15), color = colors[2], width = 0.05, linewidth = 0.4, alpha = .5) +
         
         
@@ -248,13 +249,13 @@ raincloud_plot <- function(data, # data as preprocessed with raincloud_prepare_d
       
       
       raincloud <- ggplot(data = data, aes(y = y_axis)) +
-        geom_point(data = data %>% filter(x_axis %in% c("1","2")), aes(x = jit, color = as.factor(x_axis)), size = 1.5, alpha = .6) +
-        geom_point(data = data %>% filter(x_axis == "3"), aes(x = jit+dodge2), color = colors[1], size = 1.5, alpha = .6) +
-        geom_point(data = data %>% filter(x_axis == "4"), aes(x = jit+dodge2), color = colors[2], size = 1.5, alpha = .6) +
-        geom_point(data = data %>% filter(x_axis == "5"), aes(x = jit+dodge), color = colors[1], size = 1.5, alpha = .6) +
-        geom_point(data = data %>% filter(x_axis == "6"), aes(x = jit+dodge), color = colors[2], size = 1.5, alpha = .6) +
-        geom_point(data = data %>% filter(x_axis == "7"), aes(x = jit+dodge4), color = colors[1], size = 1.5, alpha = .6) +
-        geom_point(data = data %>% filter(x_axis == "8"), aes(x = jit+dodge4), color = colors[2], size = 1.5, alpha = .6) +
+        geom_point(shape = 16, data = data %>% filter(x_axis %in% c("1","2")), aes(x = jit, color = as.factor(x_axis)), size = p_size, alpha = .6) +
+        geom_point(shape = 16, data = data %>% filter(x_axis == "3"), aes(x = jit+dodge2), color = colors[1], size = p_size, alpha = .6) +
+        geom_point(shape = 16, data = data %>% filter(x_axis == "4"), aes(x = jit+dodge2), color = colors[2], size = p_size, alpha = .6) +
+        geom_point(shape = 16, data = data %>% filter(x_axis == "5"), aes(x = jit+dodge), color = colors[1], size = p_size, alpha = .6) +
+        geom_point(shape = 16, data = data %>% filter(x_axis == "6"), aes(x = jit+dodge), color = colors[2], size = p_size, alpha = .6) +
+        geom_point(shape = 16, data = data %>% filter(x_axis == "7"), aes(x = jit+dodge4), color = colors[1], size = p_size, alpha = .6) +
+        geom_point(shape = 16, data = data %>% filter(x_axis == "8"), aes(x = jit+dodge4), color = colors[2], size = p_size, alpha = .6) +
         
         geom_line(data = data %>% filter(x_axis %in% c("1", "2")), aes(x = jit+dodge1, group = id), color = 'lightgray', alpha = .3) +
         geom_line(data = data %>% filter(x_axis %in% c("3", "4")), aes(x = jit+dodge2, group = id), color = 'lightgray', alpha = .3) +
@@ -266,22 +267,22 @@ raincloud_plot <- function(data, # data as preprocessed with raincloud_prepare_d
         geom_line(data = summary_df_3, aes(x = x_tick_means_3, y = score_mean), color = 'gray', linewidth = .8) +
         geom_line(data = summary_df_4, aes(x = x_tick_means_4, y = score_mean), color = 'gray', linewidth = .8) +
         
-        geom_point(data = data %>% filter(x_axis == "1"), aes(x = x_axis+dodge1, y = summary_df$score_mean[1]), position = position_nudge(x = -.15), color = colors[1], alpha = .6, size = 2.5) +
+        geom_point(shape = 16, data = data %>% filter(x_axis == "1"), aes(x = x_axis+dodge1, y = summary_df$score_mean[1]), position = position_nudge(x = -.15), color = colors[1], alpha = .6, size = meanp_size) +
         geom_errorbar(data = data %>% filter(x_axis == "1"), aes(x = x_axis+dodge1, y = summary_df$score_mean[1], ymin = summary_df$score_mean[1] - summary_df$ci[1], ymax = summary_df$score_mean[1] + summary_df$ci[1]), position = position_nudge(-.15), color = colors[1], width = 0.05, linewidth = 0.4, alpha = .6) +
-        geom_point(data = data %>% filter(x_axis == "2"), aes(x = x_axis+dodge1, y = summary_df$score_mean[2]), position = position_nudge(x = .15), color = colors[2], alpha = .6, size = 2.5) +
+        geom_point(shape = 16, data = data %>% filter(x_axis == "2"), aes(x = x_axis+dodge1, y = summary_df$score_mean[2]), position = position_nudge(x = .15), color = colors[2], alpha = .6, size = meanp_size) +
         geom_errorbar(data = data %>% filter(x_axis == "2"), aes(x = x_axis+dodge1, y = summary_df$score_mean[2], ymin = summary_df$score_mean[2] - summary_df$ci[2], ymax = summary_df$score_mean[2] + summary_df$ci[2]), position = position_nudge(x = .15), color = colors[2], width = 0.05, linewidth = 0.4, alpha = .6) +
-        geom_point(data = data %>% filter(x_axis == "3"), aes(x = x_axis+dodge2, y = summary_df$score_mean[3]), position = position_nudge(x = -.15), color = colors[1], alpha = .6, size = 2.5) +
-        geom_errorbar(data = data %>% filter(x_axis == "3"), aes(x = x_axis+dodge2, y = summary_df$score_mean[3], ymin = summary_df$score_mean[3] - summary_df$ci[3], ymax = summary_df$score_mean[3] + summary_df$ci[3]), position = position_nudge(-.15), color = colors[1], width = 0.05, linewidth = 0.4, alpha = .5) +
-        geom_point(data = data %>% filter(x_axis == "4"), aes(x = x_axis+dodge2, y = summary_df$score_mean[4]), position = position_nudge(x = .15), color = colors[2], alpha = .6, size = 2.5) +
-        geom_errorbar(data = data %>% filter(x_axis == "4"), aes(x = x_axis+dodge2, y = summary_df$score_mean[4], ymin = summary_df$score_mean[4] - summary_df$ci[4], ymax = summary_df$score_mean[4] + summary_df$ci[4]), position = position_nudge(.15), color = colors[2], width = 0.05, linewidth = 0.4, alpha = .5) +
-        geom_point(data = data %>% filter(x_axis == "5"), aes(x = x_axis + dodge, y = summary_df$score_mean[5]), position = position_nudge(x = -.15), color = colors[1], alpha = .6, size = 2.5) +
-        geom_errorbar(data = data %>% filter(x_axis == "5"), aes(x = x_axis + dodge, y = summary_df$score_mean[5], ymin = summary_df$score_mean[5] - summary_df$ci[5], ymax = summary_df$score_mean[5] + summary_df$ci[5]), position = position_nudge(-.15), color = colors[1], width = 0.05, linewidth = 0.4, alpha = .5) +
-        geom_point(data = data %>% filter(x_axis == "6"), aes(x = x_axis + dodge, y = summary_df$score_mean[6]), position = position_nudge(x = .15), color = colors[2], alpha = .6, size = 2.5) +
-        geom_errorbar(data = data %>% filter(x_axis == "6"), aes(x = x_axis + dodge, y = summary_df$score_mean[6], ymin = summary_df$score_mean[6] - summary_df$ci[6], ymax = summary_df$score_mean[6] + summary_df$ci[6]), position = position_nudge(.15), color = colors[2], width = 0.05, linewidth = 0.4, alpha = .5) +
-        geom_point(data = data %>% filter(x_axis == "7"), aes(x = x_axis + dodge4, y = summary_df$score_mean[7]), position = position_nudge(x = -.15), color = colors[1], alpha = .6, size = 2.5) +
-        geom_errorbar(data = data %>% filter(x_axis == "7"), aes(x = x_axis + dodge4, y = summary_df$score_mean[7], ymin = summary_df$score_mean[7] - summary_df$ci[7], ymax = summary_df$score_mean[7] + summary_df$ci[7]), position = position_nudge(-.15), color = colors[1], width = 0.05, linewidth = 0.4, alpha = .5) +
-        geom_point(data = data %>% filter(x_axis == "8"), aes(x = x_axis + dodge4, y = summary_df$score_mean[8]), position = position_nudge(x = .15), color = colors[2], alpha = .6, size = 2.5) +
-        geom_errorbar(data = data %>% filter(x_axis == "8"), aes(x = x_axis + dodge4, y = summary_df$score_mean[8], ymin = summary_df$score_mean[8] - summary_df$ci[8], ymax = summary_df$score_mean[8] + summary_df$ci[8]), position = position_nudge(.15), color = colors[2], width = 0.05, linewidth = 0.4, alpha = .5) +
+        geom_point(shape = 16, data = data %>% filter(x_axis == "3"), aes(x = x_axis+dodge2, y = summary_df$score_mean[3]), position = position_nudge(x = -.15), color = colors[1], alpha = .6, size = meanp_size) +
+        geom_errorbar(data = data %>% filter(x_axis == "3"), aes(x = x_axis+dodge2, y = summary_df$score_mean[3], ymin = summary_df$score_mean[3] - summary_df$ci[3], ymax = summary_df$score_mean[3] + summary_df$ci[3]), position = position_nudge(-.15), color = colors[1], width = 0.05, linewidth = 0.4, alpha = .6) +
+        geom_point(shape = 16, data = data %>% filter(x_axis == "4"), aes(x = x_axis+dodge2, y = summary_df$score_mean[4]), position = position_nudge(x = .15), color = colors[2], alpha = .6, size = meanp_size) +
+        geom_errorbar(data = data %>% filter(x_axis == "4"), aes(x = x_axis+dodge2, y = summary_df$score_mean[4], ymin = summary_df$score_mean[4] - summary_df$ci[4], ymax = summary_df$score_mean[4] + summary_df$ci[4]), position = position_nudge(.15), color = colors[2], width = 0.05, linewidth = 0.4, alpha = .6) +
+        geom_point(shape = 16, data = data %>% filter(x_axis == "5"), aes(x = x_axis + dodge, y = summary_df$score_mean[5]), position = position_nudge(x = -.15), color = colors[1], alpha = .6, size = meanp_size) +
+        geom_errorbar(data = data %>% filter(x_axis == "5"), aes(x = x_axis + dodge, y = summary_df$score_mean[5], ymin = summary_df$score_mean[5] - summary_df$ci[5], ymax = summary_df$score_mean[5] + summary_df$ci[5]), position = position_nudge(-.15), color = colors[1], width = 0.05, linewidth = 0.4, alpha = .6) +
+        geom_point(shape = 16, data = data %>% filter(x_axis == "6"), aes(x = x_axis + dodge, y = summary_df$score_mean[6]), position = position_nudge(x = .15), color = colors[2], alpha = .6, size = meanp_size) +
+        geom_errorbar(data = data %>% filter(x_axis == "6"), aes(x = x_axis + dodge, y = summary_df$score_mean[6], ymin = summary_df$score_mean[6] - summary_df$ci[6], ymax = summary_df$score_mean[6] + summary_df$ci[6]), position = position_nudge(.15), color = colors[2], width = 0.05, linewidth = 0.4, alpha = .6) +
+        geom_point(shape = 16, data = data %>% filter(x_axis == "7"), aes(x = x_axis + dodge4, y = summary_df$score_mean[7]), position = position_nudge(x = -.15), color = colors[1], alpha = .6, size = meanp_size) +
+        geom_errorbar(data = data %>% filter(x_axis == "7"), aes(x = x_axis + dodge4, y = summary_df$score_mean[7], ymin = summary_df$score_mean[7] - summary_df$ci[7], ymax = summary_df$score_mean[7] + summary_df$ci[7]), position = position_nudge(-.15), color = colors[1], width = 0.05, linewidth = 0.4, alpha = .6) +
+        geom_point(shape = 16, data = data %>% filter(x_axis == "8"), aes(x = x_axis + dodge4, y = summary_df$score_mean[8]), position = position_nudge(x = .15), color = colors[2], alpha = .6, size = meanp_size) +
+        geom_errorbar(data = data %>% filter(x_axis == "8"), aes(x = x_axis + dodge4, y = summary_df$score_mean[8], ymin = summary_df$score_mean[8] - summary_df$ci[8], ymax = summary_df$score_mean[8] + summary_df$ci[8]), position = position_nudge(.15), color = colors[2], width = 0.05, linewidth = 0.4, alpha = .6) +
         
         
         # Additional settings
@@ -327,9 +328,9 @@ raincloud_plot <- function(data, # data as preprocessed with raincloud_prepare_d
       x_tick_means_2 <- c(2.87, 4.15)
       
       raincloud <- ggplot(data = data, aes(y = y_axis)) +
-        geom_point(data = data %>% filter(x_axis %in% c("1","2")), aes(x = jit, color = as.factor(x_axis)), size = 1.5, alpha = .6) +
-        geom_point(data = data %>% filter(x_axis == "3"), aes(x = jit), color = colors[1], size = 1.5, alpha = .6) +
-        geom_point(data = data %>% filter(x_axis == "4"), aes(x = jit), color = colors[2], size = 1.5, alpha = .6) +
+        geom_point(shape = 16, data = data %>% filter(x_axis %in% c("1","2")), aes(x = jit, color = as.factor(x_axis)), size = p_size, alpha = .6) +
+        geom_point(shape = 16, data = data %>% filter(x_axis == "3"), aes(x = jit), color = colors[1], size = p_size, alpha = .6) +
+        geom_point(shape = 16, data = data %>% filter(x_axis == "4"), aes(x = jit), color = colors[2], size = p_size, alpha = .6) +
         
         geom_line(data = data %>% filter(x_axis %in% c("1", "2")), aes(x = jit, group = id), color = 'lightgray', alpha = .3) +
         geom_line(data = data %>% filter(x_axis %in% c("3", "4")), aes(x = jit, group = id), color = 'lightgray', alpha = .3) +
@@ -342,14 +343,14 @@ raincloud_plot <- function(data, # data as preprocessed with raincloud_prepare_d
         geom_line(data = summary_df_l, aes(x = x_tick_means_1, y = score_mean), color = 'gray', linewidth = .8) +
         geom_line(data = summary_df_h, aes(x = x_tick_means_2, y = score_mean), color = 'gray', linewidth = .8) +
         
-        geom_point(data = data %>% filter(x_axis == "1"), aes(x = x_axis, y = summary_df$score_mean[1]), position = position_nudge(x = -.15), color = colors[1], alpha = .6, size = 2.5) +
+        geom_point(shape = 16, data = data %>% filter(x_axis == "1"), aes(x = x_axis, y = summary_df$score_mean[1]), position = position_nudge(x = -.15), color = colors[1], alpha = .6, size = meanp_size) +
         geom_errorbar(data = data %>% filter(x_axis == "1"), aes(x = x_axis, y = summary_df$score_mean[1], ymin = summary_df$score_mean[1] - summary_df$ci[1], ymax = summary_df$score_mean[1] + summary_df$ci[1]), position = position_nudge(-.15), color = colors[1], width = 0.05, linewidth = 0.4, alpha = .6) +
-        geom_point(data = data %>% filter(x_axis == "2"), aes(x = x_axis, y = summary_df$score_mean[2]), position = position_nudge(x = .15), color = colors[2], alpha = .6, size = 2.5) +
+        geom_point(shape = 16, data = data %>% filter(x_axis == "2"), aes(x = x_axis, y = summary_df$score_mean[2]), position = position_nudge(x = .15), color = colors[2], alpha = .6, size = meanp_size) +
         geom_errorbar(data = data %>% filter(x_axis == "2"), aes(x = x_axis, y = summary_df$score_mean[2], ymin = summary_df$score_mean[2] - summary_df$ci[2], ymax = summary_df$score_mean[2] + summary_df$ci[2]), position = position_nudge(x = .15), color = colors[2], width = 0.05, linewidth = 0.4, alpha = .6) +
-        geom_point(data = data %>% filter(x_axis == "3"), aes(x = x_axis, y = summary_df$score_mean[3]), position = position_nudge(x = -.15), color = colors[1], alpha = .6, size = 2.5) +
-        geom_errorbar(data = data %>% filter(x_axis == "3"), aes(x = x_axis, y = summary_df$score_mean[3], ymin = summary_df$score_mean[3] - summary_df$ci[3], ymax = summary_df$score_mean[3] + summary_df$ci[3]), position = position_nudge(-.15), color = colors[1], width = 0.05, linewidth = 0.4, alpha = .5) +
-        geom_point(data = data %>% filter(x_axis == "4"), aes(x = x_axis, y = summary_df$score_mean[4]), position = position_nudge(x = .15), color = colors[2], alpha = .6, size = 2.5) +
-        geom_errorbar(data = data %>% filter(x_axis == "4"), aes(x = x_axis, y = summary_df$score_mean[4], ymin = summary_df$score_mean[4] - summary_df$ci[4], ymax = summary_df$score_mean[4] + summary_df$ci[4]), position = position_nudge(.15), color = colors[2], width = 0.05, linewidth = 0.4, alpha = .5)
+        geom_point(shape = 16, data = data %>% filter(x_axis == "3"), aes(x = x_axis, y = summary_df$score_mean[3]), position = position_nudge(x = -.15), color = colors[1], alpha = .6, size = meanp_size) +
+        geom_errorbar(data = data %>% filter(x_axis == "3"), aes(x = x_axis, y = summary_df$score_mean[3], ymin = summary_df$score_mean[3] - summary_df$ci[3], ymax = summary_df$score_mean[3] + summary_df$ci[3]), position = position_nudge(-.15), color = colors[1], width = 0.05, linewidth = 0.4, alpha = .6) +
+        geom_point(shape = 16, data = data %>% filter(x_axis == "4"), aes(x = x_axis, y = summary_df$score_mean[4]), position = position_nudge(x = .15), color = colors[2], alpha = .6, size = meanp_size) +
+        geom_errorbar(data = data %>% filter(x_axis == "4"), aes(x = x_axis, y = summary_df$score_mean[4], ymin = summary_df$score_mean[4] - summary_df$ci[4], ymax = summary_df$score_mean[4] + summary_df$ci[4]), position = position_nudge(.15), color = colors[2], width = 0.05, linewidth = 0.4, alpha = .6)
       
       
       if (boxplot){
@@ -442,11 +443,11 @@ raincloud_plot <- function(data, # data as preprocessed with raincloud_prepare_d
       x_tick_means_3 <- c(4.87 + dodge, 6.15 + dodge)
       
       raincloud <- ggplot(data = data, aes(y = y_axis)) +
-        geom_point(data = data %>% filter(x_axis %in% c("1","2")), aes(x = jit, color = as.factor(x_axis)), size = 1.5, alpha = .6) +
-        geom_point(data = data %>% filter(x_axis == "3"), aes(x = jit+dodge2), color = colors[1], size = 1.5, alpha = .6) +
-        geom_point(data = data %>% filter(x_axis == "4"), aes(x = jit+dodge2), color = colors[2], size = 1.5, alpha = .6) +
-        geom_point(data = data %>% filter(x_axis == "5"), aes(x = jit+dodge), color = colors[1], size = 1.5, alpha = .6) +
-        geom_point(data = data %>% filter(x_axis == "6"), aes(x = jit+dodge), color = colors[2], size = 1.5, alpha = .6) +
+        geom_point(shape = 16, data = data %>% filter(x_axis %in% c("1","2")), aes(x = jit, color = as.factor(x_axis)), size = p_size, alpha = .6) +
+        geom_point(shape = 16, data = data %>% filter(x_axis == "3"), aes(x = jit+dodge2), color = colors[1], size = p_size, alpha = .6) +
+        geom_point(shape = 16, data = data %>% filter(x_axis == "4"), aes(x = jit+dodge2), color = colors[2], size = p_size, alpha = .6) +
+        geom_point(shape = 16, data = data %>% filter(x_axis == "5"), aes(x = jit+dodge), color = colors[1], size = p_size, alpha = .6) +
+        geom_point(shape = 16, data = data %>% filter(x_axis == "6"), aes(x = jit+dodge), color = colors[2], size = p_size, alpha = .6) +
         
         geom_line(data = data %>% filter(x_axis %in% c("1", "2")), aes(x = jit+dodge1, group = id), color = 'lightgray', alpha = .3) +
         geom_line(data = data %>% filter(x_axis %in% c("3", "4")), aes(x = jit+dodge2, group = id), color = 'lightgray', alpha = .3) +
@@ -463,18 +464,18 @@ raincloud_plot <- function(data, # data as preprocessed with raincloud_prepare_d
         geom_line(data = summary_df_h, aes(x = x_tick_means_2, y = score_mean), color = 'gray', linewidth = .8) +
         geom_line(data = summary_df_3, aes(x = x_tick_means_3, y = score_mean), color = 'gray', linewidth = .8) +
         
-        geom_point(data = data %>% filter(x_axis == "1"), aes(x = x_axis+dodge1, y = summary_df$score_mean[1]), position = position_nudge(x = -.15), color = colors[1], alpha = .6, size = 2.5) +
+        geom_point(shape = 16, data = data %>% filter(x_axis == "1"), aes(x = x_axis+dodge1, y = summary_df$score_mean[1]), position = position_nudge(x = -.15), color = colors[1], alpha = .6, size = meanp_size) +
         geom_errorbar(data = data %>% filter(x_axis == "1"), aes(x = x_axis+dodge1, y = summary_df$score_mean[1], ymin = summary_df$score_mean[1] - summary_df$ci[1], ymax = summary_df$score_mean[1] + summary_df$ci[1]), position = position_nudge(-.15), color = colors[1], width = 0.05, linewidth = 0.4, alpha = .6) +
-        geom_point(data = data %>% filter(x_axis == "2"), aes(x = x_axis+dodge1, y = summary_df$score_mean[2]), position = position_nudge(x = .15), color = colors[2], alpha = .6, size = 2.5) +
+        geom_point(shape = 16, data = data %>% filter(x_axis == "2"), aes(x = x_axis+dodge1, y = summary_df$score_mean[2]), position = position_nudge(x = .15), color = colors[2], alpha = .6, size = meanp_size) +
         geom_errorbar(data = data %>% filter(x_axis == "2"), aes(x = x_axis+dodge1, y = summary_df$score_mean[2], ymin = summary_df$score_mean[2] - summary_df$ci[2], ymax = summary_df$score_mean[2] + summary_df$ci[2]), position = position_nudge(x = .15), color = colors[2], width = 0.05, linewidth = 0.4, alpha = .6) +
-        geom_point(data = data %>% filter(x_axis == "3"), aes(x = x_axis+dodge2, y = summary_df$score_mean[3]), position = position_nudge(x = -.15), color = colors[1], alpha = .6, size = 2.5) +
-        geom_errorbar(data = data %>% filter(x_axis == "3"), aes(x = x_axis+dodge2, y = summary_df$score_mean[3], ymin = summary_df$score_mean[3] - summary_df$ci[3], ymax = summary_df$score_mean[3] + summary_df$ci[3]), position = position_nudge(-.15), color = colors[1], width = 0.05, linewidth = 0.4, alpha = .5) +
-        geom_point(data = data %>% filter(x_axis == "4"), aes(x = x_axis+dodge2, y = summary_df$score_mean[4]), position = position_nudge(x = .15), color = colors[2], alpha = .6, size = 2.5) +
-        geom_errorbar(data = data %>% filter(x_axis == "4"), aes(x = x_axis+dodge2, y = summary_df$score_mean[4], ymin = summary_df$score_mean[4] - summary_df$ci[4], ymax = summary_df$score_mean[4] + summary_df$ci[4]), position = position_nudge(.15), color = colors[2], width = 0.05, linewidth = 0.4, alpha = .5) +
-        geom_point(data = data %>% filter(x_axis == "5"), aes(x = x_axis + dodge, y = summary_df$score_mean[5]), position = position_nudge(x = -.15), color = colors[1], alpha = .6, size = 2.5) +
-        geom_errorbar(data = data %>% filter(x_axis == "5"), aes(x = x_axis + dodge, y = summary_df$score_mean[5], ymin = summary_df$score_mean[5] - summary_df$ci[5], ymax = summary_df$score_mean[5] + summary_df$ci[5]), position = position_nudge(-.15), color = colors[1], width = 0.05, linewidth = 0.4, alpha = .5) +
-        geom_point(data = data %>% filter(x_axis == "6"), aes(x = x_axis + dodge, y = summary_df$score_mean[6]), position = position_nudge(x = .15), color = colors[2], alpha = .6, size = 2.5) +
-        geom_errorbar(data = data %>% filter(x_axis == "6"), aes(x = x_axis + dodge, y = summary_df$score_mean[6], ymin = summary_df$score_mean[6] - summary_df$ci[6], ymax = summary_df$score_mean[6] + summary_df$ci[6]), position = position_nudge(.15), color = colors[2], width = 0.05, linewidth = 0.4, alpha = .5) +
+        geom_point(shape = 16, data = data %>% filter(x_axis == "3"), aes(x = x_axis+dodge2, y = summary_df$score_mean[3]), position = position_nudge(x = -.15), color = colors[1], alpha = .6, size = meanp_size) +
+        geom_errorbar(data = data %>% filter(x_axis == "3"), aes(x = x_axis+dodge2, y = summary_df$score_mean[3], ymin = summary_df$score_mean[3] - summary_df$ci[3], ymax = summary_df$score_mean[3] + summary_df$ci[3]), position = position_nudge(-.15), color = colors[1], width = 0.05, linewidth = 0.4, alpha = .6) +
+        geom_point(shape = 16, data = data %>% filter(x_axis == "4"), aes(x = x_axis+dodge2, y = summary_df$score_mean[4]), position = position_nudge(x = .15), color = colors[2], alpha = .6, size = meanp_size) +
+        geom_errorbar(data = data %>% filter(x_axis == "4"), aes(x = x_axis+dodge2, y = summary_df$score_mean[4], ymin = summary_df$score_mean[4] - summary_df$ci[4], ymax = summary_df$score_mean[4] + summary_df$ci[4]), position = position_nudge(.15), color = colors[2], width = 0.05, linewidth = 0.4, alpha = .6) +
+        geom_point(shape = 16, data = data %>% filter(x_axis == "5"), aes(x = x_axis + dodge, y = summary_df$score_mean[5]), position = position_nudge(x = -.15), color = colors[1], alpha = .6, size = meanp_size) +
+        geom_errorbar(data = data %>% filter(x_axis == "5"), aes(x = x_axis + dodge, y = summary_df$score_mean[5], ymin = summary_df$score_mean[5] - summary_df$ci[5], ymax = summary_df$score_mean[5] + summary_df$ci[5]), position = position_nudge(-.15), color = colors[1], width = 0.05, linewidth = 0.4, alpha = .6) +
+        geom_point(shape = 16, data = data %>% filter(x_axis == "6"), aes(x = x_axis + dodge, y = summary_df$score_mean[6]), position = position_nudge(x = .15), color = colors[2], alpha = .6, size = meanp_size) +
+        geom_errorbar(data = data %>% filter(x_axis == "6"), aes(x = x_axis + dodge, y = summary_df$score_mean[6], ymin = summary_df$score_mean[6] - summary_df$ci[6], ymax = summary_df$score_mean[6] + summary_df$ci[6]), position = position_nudge(.15), color = colors[2], width = 0.05, linewidth = 0.4, alpha = .6) +
         
         # Additional settings
         scale_color_manual(values = colors, labels = within_levels, name = within_label) +
@@ -523,13 +524,13 @@ raincloud_plot <- function(data, # data as preprocessed with raincloud_prepare_d
       
       
       raincloud <- ggplot(data = data, aes(y = y_axis)) +
-        geom_point(data = data %>% filter(x_axis %in% c("1","2")), aes(x = jit, color = as.factor(x_axis)), size = 1.5, alpha = .6) +
-        geom_point(data = data %>% filter(x_axis == "3"), aes(x = jit+dodge2), color = colors[1], size = 1.5, alpha = .6) +
-        geom_point(data = data %>% filter(x_axis == "4"), aes(x = jit+dodge2), color = colors[2], size = 1.5, alpha = .6) +
-        geom_point(data = data %>% filter(x_axis == "5"), aes(x = jit+dodge), color = colors[1], size = 1.5, alpha = .6) +
-        geom_point(data = data %>% filter(x_axis == "6"), aes(x = jit+dodge), color = colors[2], size = 1.5, alpha = .6) +
-        geom_point(data = data %>% filter(x_axis == "7"), aes(x = jit+dodge4), color = colors[1], size = 1.5, alpha = .6) +
-        geom_point(data = data %>% filter(x_axis == "8"), aes(x = jit+dodge4), color = colors[2], size = 1.5, alpha = .6) +
+        geom_point(shape = 16, data = data %>% filter(x_axis %in% c("1","2")), aes(x = jit, color = as.factor(x_axis)), size = p_size, alpha = .6) +
+        geom_point(shape = 16, data = data %>% filter(x_axis == "3"), aes(x = jit+dodge2), color = colors[1], size = p_size, alpha = .6) +
+        geom_point(shape = 16, data = data %>% filter(x_axis == "4"), aes(x = jit+dodge2), color = colors[2], size = p_size, alpha = .6) +
+        geom_point(shape = 16, data = data %>% filter(x_axis == "5"), aes(x = jit+dodge), color = colors[1], size = p_size, alpha = .6) +
+        geom_point(shape = 16, data = data %>% filter(x_axis == "6"), aes(x = jit+dodge), color = colors[2], size = p_size, alpha = .6) +
+        geom_point(shape = 16, data = data %>% filter(x_axis == "7"), aes(x = jit+dodge4), color = colors[1], size = p_size, alpha = .6) +
+        geom_point(shape = 16, data = data %>% filter(x_axis == "8"), aes(x = jit+dodge4), color = colors[2], size = p_size, alpha = .6) +
         
         geom_line(data = data %>% filter(x_axis %in% c("1", "2")), aes(x = jit+dodge1, group = id), color = 'lightgray', alpha = .3) +
         geom_line(data = data %>% filter(x_axis %in% c("3", "4")), aes(x = jit+dodge2, group = id), color = 'lightgray', alpha = .3) +
@@ -550,22 +551,22 @@ raincloud_plot <- function(data, # data as preprocessed with raincloud_prepare_d
         geom_line(data = summary_df_3, aes(x = x_tick_means_3, y = score_mean), color = 'gray', linewidth = .8) +
         geom_line(data = summary_df_4, aes(x = x_tick_means_4, y = score_mean), color = 'gray', linewidth = .8) +
         
-        geom_point(data = data %>% filter(x_axis == "1"), aes(x = x_axis+dodge1, y = summary_df$score_mean[1]), position = position_nudge(x = -.15), color = colors[1], alpha = .6, size = 2.5) +
+        geom_point(shape = 16, data = data %>% filter(x_axis == "1"), aes(x = x_axis+dodge1, y = summary_df$score_mean[1]), position = position_nudge(x = -.15), color = colors[1], alpha = .6, size = meanp_size) +
         geom_errorbar(data = data %>% filter(x_axis == "1"), aes(x = x_axis+dodge1, y = summary_df$score_mean[1], ymin = summary_df$score_mean[1] - summary_df$ci[1], ymax = summary_df$score_mean[1] + summary_df$ci[1]), position = position_nudge(-.15), color = colors[1], width = 0.05, linewidth = 0.4, alpha = .6) +
-        geom_point(data = data %>% filter(x_axis == "2"), aes(x = x_axis+dodge1, y = summary_df$score_mean[2]), position = position_nudge(x = .15), color = colors[2], alpha = .6, size = 2.5) +
+        geom_point(shape = 16, data = data %>% filter(x_axis == "2"), aes(x = x_axis+dodge1, y = summary_df$score_mean[2]), position = position_nudge(x = .15), color = colors[2], alpha = .6, size = meanp_size) +
         geom_errorbar(data = data %>% filter(x_axis == "2"), aes(x = x_axis+dodge1, y = summary_df$score_mean[2], ymin = summary_df$score_mean[2] - summary_df$ci[2], ymax = summary_df$score_mean[2] + summary_df$ci[2]), position = position_nudge(x = .15), color = colors[2], width = 0.05, linewidth = 0.4, alpha = .6) +
-        geom_point(data = data %>% filter(x_axis == "3"), aes(x = x_axis+dodge2, y = summary_df$score_mean[3]), position = position_nudge(x = -.15), color = colors[1], alpha = .6, size = 2.5) +
-        geom_errorbar(data = data %>% filter(x_axis == "3"), aes(x = x_axis+dodge2, y = summary_df$score_mean[3], ymin = summary_df$score_mean[3] - summary_df$ci[3], ymax = summary_df$score_mean[3] + summary_df$ci[3]), position = position_nudge(-.15), color = colors[1], width = 0.05, linewidth = 0.4, alpha = .5) +
-        geom_point(data = data %>% filter(x_axis == "4"), aes(x = x_axis+dodge2, y = summary_df$score_mean[4]), position = position_nudge(x = .15), color = colors[2], alpha = .6, size = 2.5) +
-        geom_errorbar(data = data %>% filter(x_axis == "4"), aes(x = x_axis+dodge2, y = summary_df$score_mean[4], ymin = summary_df$score_mean[4] - summary_df$ci[4], ymax = summary_df$score_mean[4] + summary_df$ci[4]), position = position_nudge(.15), color = colors[2], width = 0.05, linewidth = 0.4, alpha = .5) +
-        geom_point(data = data %>% filter(x_axis == "5"), aes(x = x_axis + dodge, y = summary_df$score_mean[5]), position = position_nudge(x = -.15), color = colors[1], alpha = .6, size = 2.5) +
-        geom_errorbar(data = data %>% filter(x_axis == "5"), aes(x = x_axis + dodge, y = summary_df$score_mean[5], ymin = summary_df$score_mean[5] - summary_df$ci[5], ymax = summary_df$score_mean[5] + summary_df$ci[5]), position = position_nudge(-.15), color = colors[1], width = 0.05, linewidth = 0.4, alpha = .5) +
-        geom_point(data = data %>% filter(x_axis == "6"), aes(x = x_axis + dodge, y = summary_df$score_mean[6]), position = position_nudge(x = .15), color = colors[2], alpha = .6, size = 2.5) +
-        geom_errorbar(data = data %>% filter(x_axis == "6"), aes(x = x_axis + dodge, y = summary_df$score_mean[6], ymin = summary_df$score_mean[6] - summary_df$ci[6], ymax = summary_df$score_mean[6] + summary_df$ci[6]), position = position_nudge(.15), color = colors[2], width = 0.05, linewidth = 0.4, alpha = .5) +
-        geom_point(data = data %>% filter(x_axis == "7"), aes(x = x_axis + dodge4, y = summary_df$score_mean[7]), position = position_nudge(x = -.15), color = colors[1], alpha = .6, size = 2.5) +
-        geom_errorbar(data = data %>% filter(x_axis == "7"), aes(x = x_axis + dodge4, y = summary_df$score_mean[7], ymin = summary_df$score_mean[7] - summary_df$ci[7], ymax = summary_df$score_mean[7] + summary_df$ci[7]), position = position_nudge(-.15), color = colors[1], width = 0.05, linewidth = 0.4, alpha = .5) +
-        geom_point(data = data %>% filter(x_axis == "8"), aes(x = x_axis + dodge4, y = summary_df$score_mean[8]), position = position_nudge(x = .15), color = colors[2], alpha = .6, size = 2.5) +
-        geom_errorbar(data = data %>% filter(x_axis == "8"), aes(x = x_axis + dodge4, y = summary_df$score_mean[8], ymin = summary_df$score_mean[8] - summary_df$ci[8], ymax = summary_df$score_mean[8] + summary_df$ci[8]), position = position_nudge(.15), color = colors[2], width = 0.05, linewidth = 0.4, alpha = .5) +
+        geom_point(shape = 16, data = data %>% filter(x_axis == "3"), aes(x = x_axis+dodge2, y = summary_df$score_mean[3]), position = position_nudge(x = -.15), color = colors[1], alpha = .6, size = meanp_size) +
+        geom_errorbar(data = data %>% filter(x_axis == "3"), aes(x = x_axis+dodge2, y = summary_df$score_mean[3], ymin = summary_df$score_mean[3] - summary_df$ci[3], ymax = summary_df$score_mean[3] + summary_df$ci[3]), position = position_nudge(-.15), color = colors[1], width = 0.05, linewidth = 0.4, alpha = .6) +
+        geom_point(shape = 16, data = data %>% filter(x_axis == "4"), aes(x = x_axis+dodge2, y = summary_df$score_mean[4]), position = position_nudge(x = .15), color = colors[2], alpha = .6, size = meanp_size) +
+        geom_errorbar(data = data %>% filter(x_axis == "4"), aes(x = x_axis+dodge2, y = summary_df$score_mean[4], ymin = summary_df$score_mean[4] - summary_df$ci[4], ymax = summary_df$score_mean[4] + summary_df$ci[4]), position = position_nudge(.15), color = colors[2], width = 0.05, linewidth = 0.4, alpha = .6) +
+        geom_point(shape = 16, data = data %>% filter(x_axis == "5"), aes(x = x_axis + dodge, y = summary_df$score_mean[5]), position = position_nudge(x = -.15), color = colors[1], alpha = .6, size = meanp_size) +
+        geom_errorbar(data = data %>% filter(x_axis == "5"), aes(x = x_axis + dodge, y = summary_df$score_mean[5], ymin = summary_df$score_mean[5] - summary_df$ci[5], ymax = summary_df$score_mean[5] + summary_df$ci[5]), position = position_nudge(-.15), color = colors[1], width = 0.05, linewidth = 0.4, alpha = .6) +
+        geom_point(shape = 16, data = data %>% filter(x_axis == "6"), aes(x = x_axis + dodge, y = summary_df$score_mean[6]), position = position_nudge(x = .15), color = colors[2], alpha = .6, size = meanp_size) +
+        geom_errorbar(data = data %>% filter(x_axis == "6"), aes(x = x_axis + dodge, y = summary_df$score_mean[6], ymin = summary_df$score_mean[6] - summary_df$ci[6], ymax = summary_df$score_mean[6] + summary_df$ci[6]), position = position_nudge(.15), color = colors[2], width = 0.05, linewidth = 0.4, alpha = .6) +
+        geom_point(shape = 16, data = data %>% filter(x_axis == "7"), aes(x = x_axis + dodge4, y = summary_df$score_mean[7]), position = position_nudge(x = -.15), color = colors[1], alpha = .6, size = meanp_size) +
+        geom_errorbar(data = data %>% filter(x_axis == "7"), aes(x = x_axis + dodge4, y = summary_df$score_mean[7], ymin = summary_df$score_mean[7] - summary_df$ci[7], ymax = summary_df$score_mean[7] + summary_df$ci[7]), position = position_nudge(-.15), color = colors[1], width = 0.05, linewidth = 0.4, alpha = .6) +
+        geom_point(shape = 16, data = data %>% filter(x_axis == "8"), aes(x = x_axis + dodge4, y = summary_df$score_mean[8]), position = position_nudge(x = .15), color = colors[2], alpha = .6, size = meanp_size) +
+        geom_errorbar(data = data %>% filter(x_axis == "8"), aes(x = x_axis + dodge4, y = summary_df$score_mean[8], ymin = summary_df$score_mean[8] - summary_df$ci[8], ymax = summary_df$score_mean[8] + summary_df$ci[8]), position = position_nudge(.15), color = colors[2], width = 0.05, linewidth = 0.4, alpha = .6) +
         
         
         # Additional settings
