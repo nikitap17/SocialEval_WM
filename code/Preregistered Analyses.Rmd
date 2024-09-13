@@ -22,6 +22,13 @@ options(es.use_symbols = TRUE)
 
 ```
 
+```{r}
+C_pallette = c("#FED789", "#476F84", "#453947")
+c1_low = "#FED789"
+c2_high = "#476F84"
+c3 = "#453947"
+```
+
 ### Data Preparation
 
 ```{r}
@@ -254,7 +261,7 @@ plot_emm_rt <- ggplot(emm, aes(x = Evaluation, y = Mean, group = factor(CL), col
 
   scale_shape_manual(values = c(15, 19),
                      labels = c("low", "high")) +  # Use square for H0 and circle for H1
-  scale_color_manual(values = c("deepskyblue4", "darkorange"),
+  scale_color_manual(values = c(c1_low, c2_high),
                      labels = c("low", "high")) +  # Orange color for H0 and dark green for H1
   scale_linetype_manual(values = c(1,2),
                        labels = c("low", "high")) +
@@ -289,7 +296,7 @@ ggplot(emm_eu, aes(x = trial_block, y = Mean, group = Evaluation, shape= Evaluat
   
   scale_shape_manual(values = c(15, 19),
                      labels = c("control", "evaluation")) +  # Use square for H0 and circle for H1
-  scale_color_manual(values = c("deepskyblue4", "darkorange"),
+  scale_color_manual(values = c(c1_low, c2_high),
                      labels = c("control", "evaluation")) +
   scale_linetype_manual(values = c(1,2),
                         labels = c("control", "evaluation")) +
@@ -320,7 +327,7 @@ ggplot(emm_eu, aes(x = trial_block, y = Mean, group = block, shape= block, color
   
   scale_shape_manual(values = c(15, 19),
                      labels = c("first", "second")) +  # Use square for H0 and circle for H1
-  scale_color_manual(values = c("deepskyblue4", "darkorange"),
+  scale_color_manual(values = c(c1_low, c2_high),
                      labels = c("first", "second")) +
   scale_linetype_manual(values = c(1,2),
                         labels = c("first", "second")) +
@@ -385,8 +392,8 @@ ggplot(bf_collect1, aes(x = sample_size, y = logmean, group = Hypothesis,
   labs(x = "Sample Size", y = "log Bayes Factors") +
   scale_shape_manual(values = c(23, 19)) +  # Use square for H0 and circle for H1
   
-  scale_color_manual(values = c("#ffc100","#008080")) +
-  scale_fill_manual(values = c("#ffc100","#008080")) +
+  scale_color_manual(values = c(c1_low, c3)) +
+  scale_fill_manual(values = c(c1_low, c3)) +
   
   theme_classic() +
   theme(legend.title = element_blank(),
@@ -444,8 +451,8 @@ ggplot(bf_collect3, aes(x = sample_size, y = logmean, group = Hypothesis,
   labs(x = "Sample Size", y = "log Bayes Factors") +
   scale_shape_manual(values = c(15, 19)) +
   
-  scale_color_manual(values = c("#E34234","#008080")) +  # Orange color for H0 and dark green for H1
-  scale_fill_manual(values = c("#E34234","#008080")) +
+  scale_color_manual(values = c(c2_high,c3)) +  # Orange color for H0 and dark green for H1
+  scale_fill_manual(values = c(c2_high, c3)) +
   
   theme_classic() +
   theme(legend.title = element_blank(),
@@ -576,7 +583,7 @@ plot_emm_errors <- ggplot(emm_eu, aes(x = Evaluation, y = Probability, group = C
   
   scale_shape_manual(values = c(15, 19),
                      labels = c("low", "high")) +
-  scale_color_manual(values = c("deepskyblue4", "darkorange"),
+  scale_color_manual(values = c(c1_low, c2_high),
                      labels = c("low", "high")) +
   scale_linetype_manual(values=c(1,2),
                         labels=c("low","high")) +
@@ -609,7 +616,7 @@ ggplot(emm_eu, aes(x = trial_block, y = Probability, group = Evaluation, shape= 
   
   scale_shape_manual(values = c(15, 19),
                      labels = c("control", "evaluation")) +  # Use square for H0 and circle for H1
-  scale_color_manual(values = c("deepskyblue4", "darkorange"),
+  scale_color_manual(values = c(c1_low, c2_high),
                      labels = c("control", "evaluation")) +
   scale_linetype_manual(values = c(1,2),
                         labels = c("control", "evaluation")) +
@@ -641,7 +648,7 @@ ggplot(emm_eu, aes(x = trial_block, y = Probability, group = block, shape= block
   
   scale_shape_manual(values = c(15, 19),
                      labels = c("first", "second")) +  # Use square for H0 and circle for H1
-  scale_color_manual(values = c("deepskyblue4", "darkorange"),
+  scale_color_manual(values = c(c1_low, c2_high),
                      labels = c("first", "second")) +
   scale_linetype_manual(values = c(1,2),
                         labels = c("first", "second")) +
@@ -737,8 +744,8 @@ ggplot(bf_collect_er1, aes(x = sample_size, y = logmean, group = Hypothesis,
   labs(x = "Sample Size", y = "log Bayes Factors") +
   scale_shape_manual(values = c(23, 19)) +  # Use square for H0 and circle for H1
   
-  scale_color_manual(values = c("#ffc100","#008080")) +
-  scale_fill_manual(values = c("#ffc100","#008080")) +
+  scale_color_manual(values = c(c1_low, c3)) +
+  scale_fill_manual(values = c(c1_low, c3)) +
   
   theme_classic() +
   theme(legend.title = element_blank(),
@@ -769,8 +776,8 @@ ggplot(bf_collect_er3, aes(x = sample_size, y = logmean, group = Hypothesis,
   labs(x = "Sample Size", y = "log Bayes Factors") +
   scale_shape_manual(values = c(15, 19)) +  # Use square for H0 and circle for H1
   
-  scale_color_manual(values = c("darkorange","#008080")) +
-  scale_fill_manual(values = c("darkorange","#008080")) +# Orange color for H0 and dark green for H1
+  scale_color_manual(values = c(c2_high, c3)) +
+  scale_fill_manual(values = c(c2_high, c3)) +# Orange color for H0 and dark green for H1
   
   theme_classic() +
   theme(legend.title = element_blank(),
@@ -810,7 +817,7 @@ ggplot(emm, aes(x = Evaluation, y = Probability, group = CL, shape= CL, color = 
   
   scale_shape_manual(values = c(15, 19),
                      labels = c("low", "high")) +
-  scale_color_manual(values = c("#008080", "#E34234"),
+  scale_color_manual(values = c(c1_low, c2_high),
                      labels = c("low", "high")) +
   scale_linetype_manual(values=c(1,2),
                         labels=c("low","high")) +
@@ -843,7 +850,7 @@ ggplot(emm, aes(x = Evaluation, y = Probability, group = CL, shape= CL, color = 
   
   scale_shape_manual(values = c(15, 19),
                      labels = c("low", "high")) +
-  scale_color_manual(values = c("#008080", "#E34234"),
+  scale_color_manual(values = c(c1_low, c2_high),
                      labels = c("low", "high")) +
   scale_linetype_manual(values=c(1,2),
                         labels=c("low","high")) +

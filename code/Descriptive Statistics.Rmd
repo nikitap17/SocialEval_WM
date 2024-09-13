@@ -19,6 +19,13 @@ lapply(pkgs, library, character.only=TRUE)
 
 ```
 
+```{r}
+C_pallette = c("#FED789", "#476F84", "#453947")
+c1_low = "#FED789"
+c2_high = "#476F84"
+c3 = "#453947"
+```
+
 ### Load data
 
 ```{r}
@@ -335,7 +342,8 @@ errors_plot <-raincloud_plot(data = errors_df$data,
                between_levels = c("Low", "High"),
                violins = T,
                boxplot = T,
-               between_annotations = "bottom") +
+               between_annotations = "bottom",
+               colors = c(c1_low, c2_high)) +
   xlab("Cognitive Load") + ylab("Errors")
 
 errors_plot
@@ -358,7 +366,8 @@ rt_plot <-raincloud_plot(data = rt_df$data,
                between_levels = c("Low", "High"),
                violins = T,
                boxplot = T,
-               between_annotations = "bottom") +
+               between_annotations = "bottom",
+               colors = c(c1_low, c2_high)) +
   xlab("Cognitive Load") + ylab("Reaction Time")
 ```
 
@@ -395,7 +404,8 @@ eustress_plot <-raincloud_plot(data = eustress_df$data,
                between_levels = c("Low", "High"),
                violins = T,
                boxplot = T,
-               between_annotations = "bottom") +
+               between_annotations = "bottom",
+               colors = c(c1_low, c2_high)) +
   xlab("Cognitive Load") + ylab("Eustress")
 ```
 
@@ -416,7 +426,8 @@ distress_plot <-raincloud_plot(data = distress_df$data,
                between_levels = c("Low", "High"),
                violins = T,
                boxplot = T,
-               between_annotations = "bottom") +
+               between_annotations = "bottom",
+               colors = c(c1_low, c2_high)) +
   xlab("Cognitive Load") + ylab("Distress")
 ```
 
@@ -451,7 +462,8 @@ mental_plot <-raincloud_plot(data = mental_df$data,
                between_levels = c("Control", "Evaluation"),
                violins = T,
                boxplot = T,
-               between_annotations = "bottom") +
+               between_annotations = "bottom",
+               colors = c(c1_low, c2_high)) +
   xlab("Social Evaluation") + ylab("Mental Demand")
 
 print(mental_plot)

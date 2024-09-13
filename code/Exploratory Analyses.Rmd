@@ -13,12 +13,20 @@ pkgs <- c("tidyverse",
           "rempsyc",
           "effectsize",
           "flextable",
-          "parameters")
+          "parameters",
+          "sjstats")
 
 lapply(pkgs, library, character.only=TRUE)
 
 options(es.use_symbols = TRUE)
 
+```
+
+```{r}
+C_pallette = c("#FED789", "#476F84", "#453947")
+c1_low = "#FED789"
+c2_high = "#476F84"
+c3 = "#453947"
 ```
 
 ### Data Preparation
@@ -577,6 +585,88 @@ stress_df <- agg_df[c("ID", "CL", "Evaluation", "RT_Raw", "Errors")] %>% filter(
 
 new_df <- inner_join(control_df, stress_df, by=c('ID',"CL"))
 new_df$diff_err <- new_df$Errors.y - new_df$Errors.x
+new_df$diff_rt <- new_df$RT_Raw.y - new_df$RT_Raw.x
+new_df <- new_df[c("ID", "CL", "diff_err", "diff_rt")]
+
+new_df$improvement <- ifelse(new_df$diff_err < 0,1,
+                             ifelse(new_df$diff_err > 0, -1, 0))
+```
+
+
+```{r, fig.width=6, fig.height=4}
+
+
+
+mean_data <- new_df %>%
+  group_by(group = ifelse(diff_err < 0, -1, 1)) %>%
+  summarise(mean_x = mean(diff_err),
+            mean_y = mean(diff_rt),
+            se_x = sd(diff_err) / sqrt(n()),
+            se_y = sd(diff_rt) / sqrt(n()))
+
+reg_col <- "#453947" #"#46396E"
+# Create the plot
+p <- ggplot(data = new_df, aes(x=diff_err, y=diff_rt)) +
+  geom_point(shape = 16, aes(color= CL), size=3, alpha=0.8) +  # scatter plot
+  geom_smooth(method="lm", color= reg_col, fill= reg_col, se=TRUE) +  # regression line
+  geom_hline(yintercept=0, linetype="dashed", linewidth=1) +  # dashed line at y = 0
+  geom_vline(xintercept=0, linetype="dashed", linewidth=1) +  # dashed line at x = 0
+  
+  labs(x="Delta errors", y="Delta rt", title="all CL") +
+  
+  scale_color_manual(values = c("#FED789", "#476F84"),
+                     labels = c("low", "high")) +
+  theme_classic() +
+  theme()
+
+print(p)
+
+
+
+
+```
+
+
+```{r}
+lmm_df <- new_df %>% filter(improvement != 0)
+lmm_df$improvement <- factor(lmm_df$improvement)
+levels(lmm_df$improvement)
+
+lmm <- lmer(scale(diff_rt) ~ scale(diff_err) + CL + (1|ID), data = lmm_df, REML = T)
+summary(lmm)
+performance::r2(lmm)
+```
+
+```{r}
+lmm <- lm(diff_rt ~ improvement + CL, data = new_df)
+emm <- estimate_means(lmm, ~ improvement + CL)
+
+plot_emm <- ggplot(emm, aes(x = improvement, y = Mean, group = factor(CL), color=factor(CL),shape=CL, linetype = factor(CL))) +
+  geom_point(position = position_dodge(width = 0.2), size = 2.5) +
+  geom_line(position = position_dodge(width = 0.2), linewidth = 0.5) +
+  geom_errorbar(aes(ymin=CI_low, ymax=CI_high), width=.2,
+                position=position_dodge(0.2),linewidth=0.35,linetype=1)+
+  labs(x = "Social Evaluation", y = "Reaction Time",
+       color = "Cognitive Load", shape="Cognitive Load", linetype="Cognitive Load") +
+  
+  #scale_x_discrete(labels = c("control", "evaluation"))+
+  
+  theme_classic() +
+
+  scale_shape_manual(values = c(15, 19),
+                     labels = c("low", "high")) +  # Use square for H0 and circle for H1
+  scale_color_manual(values = c("#FF8811FF", "#046E8FFF"),
+                     labels = c("low", "high")) +  # Orange color for H0 and dark green for H1
+  scale_linetype_manual(values = c(1,2),
+                       labels = c("low", "high")) +
+  
+  #theme_classic() +
+  theme(legend.text = element_text(size = 8),
+        axis.title.x = element_text(vjust = -3),
+        axis.title.y = element_text(vjust = 3),
+        plot.margin = margin(b = 15, l=15))
+
+plot_emm
 ```
 
 
@@ -593,18 +683,18 @@ incl_list2back <- unique(new_df$ID[new_df$CL == "low" & new_df$diff_err < 0])
 # b) the high CL condition
 incl_list3back <- unique(new_df$ID[new_df$CL == "high" & new_df$diff_err < 0])
 
-sum(incl_list2back %in% incl_list3back) # N of participants who performed better in both low and high CL
+paste("N of participants who performed better in both low and high CL:", sum(incl_list2back %in% incl_list3back))
 
 analys_df_2back <- subset(agg_df, CL == "low" & ID %in% incl_list2back)
 analys_df_3back <- subset(agg_df, CL == "high" & ID %in% incl_list3back)
 analys_df <- rbind(analys_df_2back,analys_df_3back)
 
 ## LMM
-m_better <- lmer(RT_Raw ~ CL+Evaluation + (1|ID), data =analys_df, REML = T)  
-summary(m_better)
-effectsize(m_better)
-
-cor.test(analys_df$RT_Raw, analys_df$Errors, alternative = "t")
+# m_better <- lmer(RT_Raw ~ CL+Evaluation + (1|ID), data =analys_df, REML = T)  
+# summary(m_better)
+# effectsize(m_better)
+# 
+# cor.test(analys_df$RT_Raw, analys_df$Errors, alternative = "t")
 
 ```
 

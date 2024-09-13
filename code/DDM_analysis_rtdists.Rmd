@@ -17,6 +17,14 @@ library(rempsyc)
 library(flextable)
 ```
 
+```{r}
+C_pallette = c("#FED789", "#476F84", "#453947")
+c1_low = "#FED789"
+c2_high = "#476F84"
+c3 = "#453947"
+```
+
+
 ### Load data
 
 ```{r}
@@ -272,7 +280,7 @@ plot_a <- ggplot(emm, aes(x = Eval, y = Mean, group = factor(CL), color=factor(C
 
   scale_shape_manual(values = c(15, 19),
                      labels = c("low", "high")) +  # Use square for H0 and circle for H1
-  scale_color_manual(values = c("lightskyblue4", "lightsalmon"),
+  scale_color_manual(values = c(c1_low, c2_high),
                      labels = c("low", "high")) +  # Orange color for H0 and dark green for H1
   scale_linetype_manual(values = c(1,2),
                        labels = c("low", "high")) +
@@ -333,7 +341,7 @@ plot_z <- ggplot(emm, aes(x = Eval, y = Mean, group = factor(CL), color=factor(C
 
   scale_shape_manual(values = c(15, 19),
                      labels = c("low", "high")) +  # Use square for H0 and circle for H1
-  scale_color_manual(values = c("lightskyblue4", "lightsalmon"),
+  scale_color_manual(values = c(c1_low, c2_high),
                      labels = c("low", "high")) +  # Orange color for H0 and dark green for H1
   scale_linetype_manual(values = c(1,2),
                        labels = c("low", "high")) +
@@ -394,7 +402,7 @@ plot_v1 <- ggplot(emm, aes(x = Eval, y = Mean, group = factor(CL), color=factor(
 
   scale_shape_manual(values = c(15, 19),
                      labels = c("low", "high")) +  # Use square for H0 and circle for H1
-  scale_color_manual(values = c("lightskyblue4", "lightsalmon"),
+  scale_color_manual(values = c(c1_low, c2_high),
                      labels = c("low", "high")) +  # Orange color for H0 and dark green for H1
   scale_linetype_manual(values = c(1,2),
                        labels = c("low", "high")) +
@@ -453,7 +461,7 @@ plot_v2 <- ggplot(emm, aes(x = Eval, y = Mean, group = factor(CL), color=factor(
 
   scale_shape_manual(values = c(15, 19),
                      labels = c("low", "high")) +  # Use square for H0 and circle for H1
-  scale_color_manual(values = c("lightskyblue4", "lightsalmon"),
+  scale_color_manual(values = c(c1_low, c2_high),
                      labels = c("low", "high")) +  # Orange color for H0 and dark green for H1
   scale_linetype_manual(values = c(1,2),
                        labels = c("low", "high")) +
