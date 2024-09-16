@@ -23,10 +23,10 @@ options(es.use_symbols = TRUE)
 ```
 
 ```{r}
-C_pallette = c("#FED789", "#476F84", "#453947")
-c1_low = "#FED789"
-c2_high = "#476F84"
-c3 = "#453947"
+C_pallette = c("#FED789", "#5A8297", "#3C304B")
+c1_low = C_pallette[1]
+c2_high = C_pallette[2]
+c3 = C_pallette[3]
 ```
 
 ### Data Preparation
@@ -189,7 +189,7 @@ ggplot(emm_eu, aes(x = Evaluation, y = Probability, group = CL, shape= CL, color
         plot.margin = margin(b = 15, l=15))
 
 
-ggsave("TablesFigures/EMM TARGET Errors interaction GLMM.jpeg",dpi=300,width = 4, height = 3)
+#ggsave("TablesFigures/EMM TARGET Errors interaction GLMM.jpeg",dpi=300,width = 4, height = 3)
 ```
 
 RT
@@ -236,7 +236,7 @@ ggplot(emm_eu, aes(x = Evaluation, y = Mean, group = CL, shape= CL, color = CL,
         plot.margin = margin(b = 15, l=15))
 
 
-ggsave("TablesFigures/EMM TARGET RT interaction GLMM.jpeg",dpi=300,width = 4, height = 3)
+#ggsave("TablesFigures/EMM TARGET RT interaction GLMM.jpeg",dpi=300,width = 4, height = 3)
 ```
 
 ### Perceived Performance
@@ -350,7 +350,7 @@ ggplot(emm, aes(x = Evaluation, y = Mean, group = CL, color=CL,shape=CL, linetyp
   
   scale_x_discrete(labels = c("Control", "Evaluation"))
 
-ggsave("TablesFigures/Perceived Mental.jpeg",dpi=300,width = 4, height = 3)
+#ggsave("TablesFigures/Perceived Mental.jpeg",dpi=300,width = 4, height = 3)
 # greater effect in CL high group
 ```
 
@@ -423,7 +423,7 @@ ggplot(emm_eu, aes(x = Evaluation, y = Mean, group = CL, color = CL)) +
   labs(x = "Evaluation", y = "EDA", color = "CL") +
   theme_minimal()
 
-ggsave("TablesFigures/EDA across conditions.jpeg",dpi=300,width = 4, height = 3)
+#ggsave("TablesFigures/EDA across conditions.jpeg",dpi=300,width = 4, height = 3)
 # greater effect in CL high group
 ```
 
@@ -594,32 +594,32 @@ new_df$improvement <- ifelse(new_df$diff_err < 0,1,
 
 
 ```{r, fig.width=6, fig.height=4}
-
-
-
 mean_data <- new_df %>%
   group_by(group = ifelse(diff_err < 0, -1, 1)) %>%
-  summarise(mean_x = mean(diff_err),
+  dplyr::summarise(mean_x = mean(diff_err),
             mean_y = mean(diff_rt),
             se_x = sd(diff_err) / sqrt(n()),
             se_y = sd(diff_rt) / sqrt(n()))
 
-reg_col <- "#453947" #"#46396E"
+reg_col <- c3
 # Create the plot
 p <- ggplot(data = new_df, aes(x=diff_err, y=diff_rt)) +
-  geom_point(shape = 16, aes(color= CL), size=3, alpha=0.8) +  # scatter plot
+  geom_point(shape = 16, aes(color= CL), size=3, alpha=0.7) +  # scatter plot
   geom_smooth(method="lm", color= reg_col, fill= reg_col, se=TRUE) +  # regression line
   geom_hline(yintercept=0, linetype="dashed", linewidth=1) +  # dashed line at y = 0
   geom_vline(xintercept=0, linetype="dashed", linewidth=1) +  # dashed line at x = 0
   
-  labs(x="Delta errors", y="Delta rt", title="all CL") +
+  labs(x= expression(Delta~"Errors"), y= expression(Delta~"Reaction Time"),
+       color = "Cognitive Load") +
   
-  scale_color_manual(values = c("#FED789", "#476F84"),
-                     labels = c("low", "high")) +
+  scale_color_manual(values = c(c1_low, c2_high),
+                     labels = c("Low", "High")) +
   theme_classic() +
-  theme()
+  theme(legend.position = "top")
 
 print(p)
+
+ggsave("TablesFigures/Figure 6 - Delta rt errors regression..jpeg",dpi=600, width = 6, height = 4)
 
 
 
@@ -632,47 +632,15 @@ lmm_df <- new_df %>% filter(improvement != 0)
 lmm_df$improvement <- factor(lmm_df$improvement)
 levels(lmm_df$improvement)
 
-lmm <- lmer(scale(diff_rt) ~ scale(diff_err) + CL + (1|ID), data = lmm_df, REML = T)
+lmm <- lmer(diff_rt ~ diff_err + CL + (1|ID), data = lmm_df, REML = T)
+lmm.int <- lmer(diff_rt ~ diff_err*CL + (1|ID), data = lmm_df, REML = T)
+AIC(lmm) - AIC(lmm.int)
+BIC(lmm) - BIC(lmm.int)
+
 summary(lmm)
-performance::r2(lmm)
+effectsize(lmm)
+
 ```
-
-```{r}
-lmm <- lm(diff_rt ~ improvement + CL, data = new_df)
-emm <- estimate_means(lmm, ~ improvement + CL)
-
-plot_emm <- ggplot(emm, aes(x = improvement, y = Mean, group = factor(CL), color=factor(CL),shape=CL, linetype = factor(CL))) +
-  geom_point(position = position_dodge(width = 0.2), size = 2.5) +
-  geom_line(position = position_dodge(width = 0.2), linewidth = 0.5) +
-  geom_errorbar(aes(ymin=CI_low, ymax=CI_high), width=.2,
-                position=position_dodge(0.2),linewidth=0.35,linetype=1)+
-  labs(x = "Social Evaluation", y = "Reaction Time",
-       color = "Cognitive Load", shape="Cognitive Load", linetype="Cognitive Load") +
-  
-  #scale_x_discrete(labels = c("control", "evaluation"))+
-  
-  theme_classic() +
-
-  scale_shape_manual(values = c(15, 19),
-                     labels = c("low", "high")) +  # Use square for H0 and circle for H1
-  scale_color_manual(values = c("#FF8811FF", "#046E8FFF"),
-                     labels = c("low", "high")) +  # Orange color for H0 and dark green for H1
-  scale_linetype_manual(values = c(1,2),
-                       labels = c("low", "high")) +
-  
-  #theme_classic() +
-  theme(legend.text = element_text(size = 8),
-        axis.title.x = element_text(vjust = -3),
-        axis.title.y = element_text(vjust = 3),
-        plot.margin = margin(b = 15, l=15))
-
-plot_emm
-```
-
-
-To test whether participants traded accuracy for speed on an individual level, we implemented the following approach:
-1. participants are split into two groups. One group performed more accurately under social evaluation (under low CL and/or high CL), whereas the other group performed less accurately under social evaluation.
-2. Conduct a linear model for each group, where CL and Evaluation predict RT. If there is a trade-off effect, the group with improved accuracy performance is expected to show reduced speed (increased RT) and vice versa.
 
 #### a) Participants who performed better under social evaluation
 

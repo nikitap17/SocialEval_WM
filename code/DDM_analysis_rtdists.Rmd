@@ -271,19 +271,19 @@ plot_a <- ggplot(emm, aes(x = Eval, y = Mean, group = factor(CL), color=factor(C
   geom_line(position = position_dodge(width = 0.2), linewidth = 0.5) +
   geom_errorbar(aes(ymin=CI_low, ymax=CI_high), width=.2,
                 position=position_dodge(0.2),linewidth=0.35,linetype=1)+
-  labs(x = "Social Evaluation", y = "a (Boundary)",
+  labs(x = "Social Evaluation", y = "Boundary a",
        color = "Cognitive Load", shape="Cognitive Load", linetype="Cognitive Load") +
   
-  scale_x_discrete(labels = c("control", "evaluation"))+
+  scale_x_discrete(labels = c("Control", "Evaluation"))+
   
   theme_classic() +
 
   scale_shape_manual(values = c(15, 19),
-                     labels = c("low", "high")) +  # Use square for H0 and circle for H1
+                     labels = c("Low", "High")) +  # Use square for H0 and circle for H1
   scale_color_manual(values = c(c1_low, c2_high),
-                     labels = c("low", "high")) +  # Orange color for H0 and dark green for H1
+                     labels = c("Low", "High")) +  # Orange color for H0 and dark green for H1
   scale_linetype_manual(values = c(1,2),
-                       labels = c("low", "high")) +
+                       labels = c("Low", "High")) +
   
   #theme_classic() +
   theme(legend.text = element_text(size = 8),
@@ -332,19 +332,19 @@ plot_z <- ggplot(emm, aes(x = Eval, y = Mean, group = factor(CL), color=factor(C
   geom_line(position = position_dodge(width = 0.2), linewidth = 0.5) +
   geom_errorbar(aes(ymin=CI_low, ymax=CI_high), width=.2,
                 position=position_dodge(0.2),linewidth=0.35,linetype=1)+
-  labs(x = "Social Evaluation", y = "z (Bias)",
+  labs(x = "Social Evaluation", y = "Bias z",
        color = "Cognitive Load", shape="Cognitive Load", linetype="Cognitive Load") +
   
-  scale_x_discrete(labels = c("control", "evaluation"))+
+  scale_x_discrete(labels = c("Control", "Evaluation"))+
   
   theme_classic() +
 
   scale_shape_manual(values = c(15, 19),
-                     labels = c("low", "high")) +  # Use square for H0 and circle for H1
+                     labels = c("Low", "High")) +  # Use square for H0 and circle for H1
   scale_color_manual(values = c(c1_low, c2_high),
-                     labels = c("low", "high")) +  # Orange color for H0 and dark green for H1
+                     labels = c("Low", "High")) +  # Orange color for H0 and dark green for H1
   scale_linetype_manual(values = c(1,2),
-                       labels = c("low", "high")) +
+                       labels = c("Low", "High")) +
   
   #theme_classic() +
   theme(legend.text = element_text(size = 8),
@@ -393,19 +393,19 @@ plot_v1 <- ggplot(emm, aes(x = Eval, y = Mean, group = factor(CL), color=factor(
   geom_line(position = position_dodge(width = 0.2), linewidth = 0.5) +
   geom_errorbar(aes(ymin=CI_low, ymax=CI_high), width=.2,
                 position=position_dodge(0.2),linewidth=0.35,linetype=1)+
-  labs(x = "Social Evaluation", y = "v1 (Drift rate)",
+  labs(x = "Social Evaluation", y = "Drift Rate v1",
        color = "Cognitive Load", shape="Cognitive Load", linetype="Cognitive Load") +
   
-  scale_x_discrete(labels = c("control", "evaluation"))+
+  scale_x_discrete(labels = c("Control", "Evaluation"))+
   
   theme_classic() +
 
   scale_shape_manual(values = c(15, 19),
-                     labels = c("low", "high")) +  # Use square for H0 and circle for H1
+                     labels = c("Low", "High")) +  # Use square for H0 and circle for H1
   scale_color_manual(values = c(c1_low, c2_high),
-                     labels = c("low", "high")) +  # Orange color for H0 and dark green for H1
+                     labels = c("Low", "High")) +  # Orange color for H0 and dark green for H1
   scale_linetype_manual(values = c(1,2),
-                       labels = c("low", "high")) +
+                       labels = c("Low", "High")) +
   
   #theme_classic() +
   theme(legend.text = element_text(size = 8),
@@ -452,19 +452,19 @@ plot_v2 <- ggplot(emm, aes(x = Eval, y = Mean, group = factor(CL), color=factor(
   geom_line(position = position_dodge(width = 0.2), linewidth = 0.5) +
   geom_errorbar(aes(ymin=CI_low, ymax=CI_high), width=.2,
                 position=position_dodge(0.2),linewidth=0.35,linetype=1)+
-  labs(x = "Social Evaluation", y = "v2 (Drift rate)",
+  labs(x = "Social Evaluation", y = "Drift Rate v2",
        color = "Cognitive Load", shape="Cognitive Load", linetype="Cognitive Load") +
   
-  scale_x_discrete(labels = c("control", "evaluation"))+
+  scale_x_discrete(labels = c("Control", "Evaluation"))+
   
   theme_classic() +
 
   scale_shape_manual(values = c(15, 19),
-                     labels = c("low", "high")) +  # Use square for H0 and circle for H1
+                     labels = c("Low", "High")) +  # Use square for H0 and circle for H1
   scale_color_manual(values = c(c1_low, c2_high),
-                     labels = c("low", "high")) +  # Orange color for H0 and dark green for H1
+                     labels = c("Low", "High")) +  # Orange color for H0 and dark green for H1
   scale_linetype_manual(values = c(1,2),
-                       labels = c("low", "high")) +
+                       labels = c("Low", "High")) +
   
   #theme_classic() +
   theme(legend.text = element_text(size = 8),

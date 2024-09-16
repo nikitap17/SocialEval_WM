@@ -448,6 +448,9 @@ ggsave("TablesFigures/Figure A2 - ADES Raincloud_plot.jpeg",dpi=600, w= 9, h = 4
 ## Mental Demand
 
 ```{r, fig.width=7, fig.height=5}
+meanp_size = 2.5
+p_size = 1.5
+
 mental_df <- raincloud_prepare_data(data = agg_df,
                                 id_variable = "ID",
                                 y_variable = "Mental",

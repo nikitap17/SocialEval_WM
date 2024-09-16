@@ -23,10 +23,10 @@ options(es.use_symbols = TRUE)
 ```
 
 ```{r}
-C_pallette = c("#FED789", "#476F84", "#453947")
-c1_low = "#FED789"
-c2_high = "#476F84"
-c3 = "#453947"
+C_pallette = c("#FED789", "#5A8297", "#3C304B")
+c1_low = C_pallette[1]
+c2_high = C_pallette[2]
+c3 = C_pallette[3]
 ```
 
 ### Data Preparation
@@ -115,7 +115,7 @@ m_aov3 <- lmer(RT_Raw ~ CL*Evaluation + (CL+Evaluation|ID),
 
 aov3 <- anova(m_aov3, type=2)
 aov3
-eta_squared(aov3,partial=T, alternative = "two.sided")
+effectsize::eta_squared(aov3,partial=T, alternative = "two.sided")
 epsilon_aov3 <- epsilon_squared(aov3, partial=T, alternative = "two.sided")
 ```
 
@@ -252,19 +252,19 @@ plot_emm_rt <- ggplot(emm, aes(x = Evaluation, y = Mean, group = factor(CL), col
   geom_line(position = position_dodge(width = 0.2), linewidth = 0.5) +
   geom_errorbar(aes(ymin=CI_low, ymax=CI_high), width=.2,
                 position=position_dodge(0.2),linewidth=0.35,linetype=1)+
-  labs(x = "Social Evaluation", y = "Reaction Time (s)",
+  labs(x = "Social Evaluation", y = "Reaction Time",
        color = "Cognitive Load", shape="Cognitive Load", linetype="Cognitive Load") +
   
-  scale_x_discrete(labels = c("control", "evaluation"))+
+  scale_x_discrete(labels = c("Control", "Evaluation"))+
   
   theme_classic() +
 
   scale_shape_manual(values = c(15, 19),
-                     labels = c("low", "high")) +  # Use square for H0 and circle for H1
+                     labels = c("Low", "High")) +  # Use square for H0 and circle for H1
   scale_color_manual(values = c(c1_low, c2_high),
-                     labels = c("low", "high")) +  # Orange color for H0 and dark green for H1
+                     labels = c("Low", "High")) +  # Orange color for H0 and dark green for H1
   scale_linetype_manual(values = c(1,2),
-                       labels = c("low", "high")) +
+                       labels = c("Low", "High")) +
   
   #theme_classic() +
   theme(legend.text = element_text(size = 8),
@@ -289,17 +289,17 @@ ggplot(emm_eu, aes(x = trial_block, y = Mean, group = Evaluation, shape= Evaluat
   geom_line(position = position_dodge(width = 0.2), size = 0.5) +
   geom_errorbar(aes(ymin=CI_low, ymax=CI_high), width=.2,
                 position=position_dodge(0.2),linewidth=0.35,linetype=1)+
-  labs(x = "Timing Blocks", y = "Reaction Time (s)",
+  labs(x = "Timing Blocks", y = "Reaction Time",
        color = "Social Evaluation", shape="Social Evaluation", linetype= "Social Evaluation") +
   
   scale_x_discrete(labels = c("1-10 Trials", "10-20 Trials", "20-30 Trials")) +
   
   scale_shape_manual(values = c(15, 19),
-                     labels = c("control", "evaluation")) +  # Use square for H0 and circle for H1
+                     labels = c("Control", "Evaluation")) +  # Use square for H0 and circle for H1
   scale_color_manual(values = c(c1_low, c2_high),
-                     labels = c("control", "evaluation")) +
+                     labels = c("Control", "Evaluation")) +
   scale_linetype_manual(values = c(1,2),
-                        labels = c("control", "evaluation")) +
+                        labels = c("Control", "Evaluation")) +
   
   theme_classic() +
   theme(legend.text = element_text(size = 8),
@@ -322,7 +322,7 @@ ggplot(emm_eu, aes(x = trial_block, y = Mean, group = block, shape= block, color
   geom_line(position = position_dodge(width = 0.2), size = 0.5) +
   geom_errorbar(aes(ymin=CI_low, ymax=CI_high), width=.2,
                 position=position_dodge(0.2),linewidth=0.35,linetype=1)+
-  labs(x = "Timing Blocks", y = "Reaction Time (s)",
+  labs(x = "Timing Blocks", y = "Reaction Time",
        color = "block", shape="block", linetype = "block") +
   
   scale_shape_manual(values = c(15, 19),
@@ -351,8 +351,8 @@ bf_df <- subset(main_df, is.na(RT_Raw) == F)
 
 ### Interaction versus no Interaction
 
-h0 = "No interaction model"
-h1 = "Interaction model"
+h0 = "Additive Model"
+h1 = "Interaction Model"
 s_size = seq(8, 43, by = 7)
 bf_collect <- data.frame(sample_size = c(s_size,s_size),
                          Hypothesis = c(rep(h0,length(s_size)), rep(h1,length(s_size))))
@@ -382,7 +382,15 @@ bf_collect1 <- bf_collect %>%
   mutate(logmean = rowMeans(bf_collect[,3:length(bf_collect)]),
          logsd = apply((bf_collect[,3:length(bf_collect)]), 1, sd))
 
-ggplot(bf_collect1, aes(x = sample_size, y = logmean, group = Hypothesis,
+write.csv(bf_collect1, "Data/clean_data/BFevidence_rt1.csv", row.names = F)
+```
+
+Plot 1
+
+```{r}
+bf_collect1 <- read_csv("Data/clean_data/BFevidence_rt1.csv", show_col_types = F)
+
+bf_plot1 <- ggplot(bf_collect1, aes(x = sample_size, y = logmean, group = Hypothesis,
                        shape = Hypothesis, color = Hypothesis, fill = Hypothesis)) +
   geom_point(size = 2) +  
   geom_line(size = 0.5) +
@@ -390,10 +398,12 @@ ggplot(bf_collect1, aes(x = sample_size, y = logmean, group = Hypothesis,
   geom_ribbon(aes(ymin = logmean-logsd, ymax = logmean+logsd), alpha = 0.3, color=NA) +
   
   labs(x = "Sample Size", y = "log Bayes Factors") +
-  scale_shape_manual(values = c(23, 19)) +  # Use square for H0 and circle for H1
   
-  scale_color_manual(values = c(c1_low, c3)) +
-  scale_fill_manual(values = c(c1_low, c3)) +
+  scale_shape_manual(values = c(19,23)) +
+  scale_color_manual(values = c(c1_low, c2_high),
+                     labels = c("Additive Model", "Interaction Model")) +
+  scale_fill_manual(values = c(c1_low, c2_high),
+                    labels = c("Additive Model", "Interaction Model")) +
   
   theme_classic() +
   theme(legend.title = element_blank(),
@@ -403,15 +413,18 @@ ggplot(bf_collect1, aes(x = sample_size, y = logmean, group = Hypothesis,
         axis.title.y = element_text(vjust = 3),
         plot.margin = margin(b = 15, l=15)) +
   
-  scale_x_continuous(breaks = bf_collect$sample_size)
+  scale_x_continuous(breaks = bf_collect1$sample_size)
 
-ggsave("TablesFigures/BF_updates int vs no int.jpeg",dpi=300,width = 4, height = 3)
+#ggsave("TablesFigures/BF_updates int vs no int.jpeg",dpi=300,width = 4, height = 3)
+```
 
 
+
+```{r}
 ### CL only versus No interaction
 
-h0 = "No interaction model"
-h1 = "CL model"
+h0 = "Additive Model"
+h1 = "CL Model"
 s_size = seq(8, 43, by = 7)
 bf_collect <- data.frame(sample_size = c(s_size,s_size),
                          Hypothesis = c(rep(h0,length(s_size)), rep(h1,length(s_size))))
@@ -437,11 +450,20 @@ for (p in permutations){
   colnames(bf_collect) <- c(cln,p)
 }
 
-bf_collect3 <- bf_collect %>%
+bf_collect2 <- bf_collect %>%
   mutate(logmean = rowMeans(bf_collect[,3:length(bf_collect)]),
          logsd = apply((bf_collect[,3:length(bf_collect)]), 1, sd))
 
-ggplot(bf_collect3, aes(x = sample_size, y = logmean, group = Hypothesis,
+write.csv(bf_collect2, "Data/clean_data/BFevidence_rt2.csv", row.names = F)
+
+```
+
+Plot 2
+
+```{r}
+bf_collect2 <- read_csv("Data/clean_data/BFevidence_rt2.csv", show_col_types = F)
+
+bf_plot2 <- ggplot(bf_collect2, aes(x = sample_size, y = logmean, group = Hypothesis,
                        shape = Hypothesis, color = Hypothesis, fill = Hypothesis)) +
   geom_point(size = 2) +  
   geom_line(size = 0.5) +
@@ -449,24 +471,42 @@ ggplot(bf_collect3, aes(x = sample_size, y = logmean, group = Hypothesis,
   geom_ribbon(aes(ymin = logmean-logsd, ymax = logmean+logsd), alpha = 0.3, color=NA) +
   
   labs(x = "Sample Size", y = "log Bayes Factors") +
-  scale_shape_manual(values = c(15, 19)) +
   
-  scale_color_manual(values = c(c2_high,c3)) +  # Orange color for H0 and dark green for H1
-  scale_fill_manual(values = c(c2_high, c3)) +
+  scale_shape_manual(values = c(19, 15)) +
+  scale_color_manual(values = c(c1_low, c3),
+                     labels = c("Additive Model", "CL Model")) +
+  scale_fill_manual(values = c(c1_low, c3),
+                    labels = c("Additive Model", "CL Model")) +
   
   theme_classic() +
   theme(legend.title = element_blank(),
-        legend.position = "top",
+        legend.position = "none",  #remove for combined visualisation later
         legend.text = element_text(size = 8),
         axis.title.x = element_text(vjust = -3),
         axis.title.y = element_text(vjust = 3),
         plot.margin = margin(b = 15, l=15)) +
   
-  scale_x_continuous(breaks = bf_collect$sample_size)+
+  scale_x_continuous(breaks = bf_collect2$sample_size)+
   scale_y_continuous(breaks=c(-4,-3,-2,-1,0,1,2,3,4))
 
-ggsave("TablesFigures/BF_updates CL vs CL+Evaluation.jpeg",dpi=300,width = 4, height = 3)
+#ggsave("TablesFigures/BF_updates CL vs CL+Evaluation.jpeg",dpi=300,width = 4, height = 3)
 ```
+
+**merge Bayesian plots for RT**
+
+```{r, fig.width=7, fig.height=3.5}
+BF_rt_plot <- (bf_plot1 | bf_plot2) +
+  plot_annotation(tag_levels = 'A', title = "Reaction Time") +
+  plot_layout(guides = "collect") &
+  theme(plot.tag = element_text(face = "bold"),
+        legend.position='bottom',
+        plot.title = element_text(hjust = 0.5))
+
+# Display the combined plot
+print(BF_rt_plot)
+ggsave("TablesFigures/Figure 5AB - BF Analysis.jpeg", dpi = 600, width = 7, height = 3.5)
+```
+
 
 ## Analyses for Errors
 
@@ -582,11 +622,11 @@ plot_emm_errors <- ggplot(emm_eu, aes(x = Evaluation, y = Probability, group = C
   scale_x_discrete(labels = c("Control", "Evaluation")) +
   
   scale_shape_manual(values = c(15, 19),
-                     labels = c("low", "high")) +
+                     labels = c("Low", "High")) +
   scale_color_manual(values = c(c1_low, c2_high),
-                     labels = c("low", "high")) +
+                     labels = c("Low", "High")) +
   scale_linetype_manual(values=c(1,2),
-                        labels=c("low","high")) +
+                        labels=c("Low","High")) +
   
   theme_classic() +
   theme(legend.text = element_text(size = 8),
@@ -615,11 +655,11 @@ ggplot(emm_eu, aes(x = trial_block, y = Probability, group = Evaluation, shape= 
        color = "Social Evaluation", shape="Social Evaluation", linetype= "Social Evaluation") +
   
   scale_shape_manual(values = c(15, 19),
-                     labels = c("control", "evaluation")) +  # Use square for H0 and circle for H1
+                     labels = c("Control", "Evaluation")) +  # Use square for H0 and circle for H1
   scale_color_manual(values = c(c1_low, c2_high),
-                     labels = c("control", "evaluation")) +
+                     labels = c("Control", "Evaluation")) +
   scale_linetype_manual(values = c(1,2),
-                        labels = c("control", "evaluation")) +
+                        labels = c("Control", "Evaluation")) +
   
   theme_classic() +
   theme(legend.text = element_text(size = 8),
@@ -684,16 +724,13 @@ ggsave("TablesFigures/Figure 4 - EMM WM Performance.jpeg",dpi=600, w= 7, h = 4.5
 s_size = seq(8, 43, by = 7)
 
 bf_collect_er1 <- data.frame(sample_size = c(s_size,s_size),
-                         Hypothesis = c(rep("No-interaction model",length(s_size)),
-                                        rep("Interaction model",length(s_size))))
+                         Hypothesis = c(rep("Additive Model",length(s_size)),
+                                        rep("Interaction Model",length(s_size))))
 bf_collect_er2 <- data.frame(sample_size = c(s_size,s_size),
-                             Hypothesis = c(rep("No-interaction model",length(s_size)),
-                                            rep("Intercept-only model",length(s_size))))
-bf_collect_er3 <- data.frame(sample_size = c(s_size,s_size),
-                             Hypothesis = c(rep("No-interaction model",length(s_size)),
-                                            rep("CL model",length(s_size))))
+                             Hypothesis = c(rep("Additive Model",length(s_size)),
+                                            rep("CL Model",length(s_size))))
 
-permutations <- as.character(seq(1,10))
+permutations <- as.character(seq(1,3))
 participants <- unique (experiment_data$ID)
 
 for (p in permutations){
@@ -701,40 +738,58 @@ for (p in permutations){
   # comparison no int vs. int
   no.int1 <- c()
   int = c()
-  # comparison no int vs. intercept
-  no.int2 = c()
-  null <- c()
   # comparison no int vs. cl
-  no.int3 <- c()
+  no.int2 <- c()
   cl <- c()
   
   participants <- sample(participants)
   
   for (n in s_size){
-
+    
+    # calculate BICs for each model and subset
     no.int_m <- BIC(glmer(Errors ~ block + trial_block + CL+Evaluation + (1|ID),
                       data=subset(experiment_data, ID %in% participants[1:n]), family = binomial))
-
+    int_m <- BIC(glmer(Errors ~ block + trial_block + CL*Evaluation + (1|ID),
+                      data=subset(experiment_data, ID %in% participants[1:n]), family = binomial))
     cl_m <- BIC(glmer(Errors ~ block + trial_block + CL + (1|ID),
                   data=subset(experiment_data, ID %in% participants[1:n]), family = binomial))
 
-    no.int3 <- c(no.int3, log10(exp((cl_m-no.int_m)/2)))
+    # calculate approximate BFs for each comparison
+    no.int1 <- c(no.int1, log10(exp((int_m - no.int_m)/2)))
+    int <- c(int, log10(exp((no.int_m - int_m)/2)))
+    
+    no.int2 <- c(no.int2, log10(exp((cl_m-no.int_m)/2)))
     cl <- c(cl, log10(exp((no.int_m-cl_m)/2)))
   }
   
-  cln <- colnames(bf_collect_er3)
-  bf_collect_er3$p <- c(no.int3,cl)
-  colnames(bf_collect_er3) <- c(cln,p)
+  # arrange the data frames
+  cln <- colnames(bf_collect_er1)
+  bf_collect_er1$p <- c(no.int1,int)
+  colnames(bf_collect_er1) <- c(cln,p)
+  
+  cln <- colnames(bf_collect_er2)
+  bf_collect_er2$p <- c(no.int2,cl)
+  colnames(bf_collect_er2) <- c(cln,p)
 }
 
+write.csv(bf_collect_er1, "Data/clean_data/BFevidence_er1.csv", row.names =  F)
+write.csv(bf_collect_er2, "Data/clean_data/BFevidence_er2.csv", row.names =  F)
 
-### no interaction vs. interaction
+```
+
+Plotting
+
+```{r}
+bf_collect_er1 <- read_csv("Data/clean_data/BFevidence_er1.csv", show_col_types = F)
+bf_collect_er2 <- read_csv("Data/clean_data/BFevidence_er2.csv", show_col_types = F)
+
+### additive vs. interaction
 
 bf_collect_er1 <- bf_collect_er1 %>%
-  mutate(logmean = rowMeans(bf_collect_er1[,3:length(bf_collect_er1)]),
+  dplyr::mutate(logmean = rowMeans(bf_collect_er1[,3:length(bf_collect_er1)]),
          logsd = apply((bf_collect_er1[,3:length(bf_collect_er1)]), 1, sd))
 
-ggplot(bf_collect_er1, aes(x = sample_size, y = logmean, group = Hypothesis,
+bf_plot3 <- ggplot(bf_collect_er1, aes(x = sample_size, y = logmean, group = Hypothesis,
                         shape = Hypothesis, color = Hypothesis, fill = Hypothesis)) +
   geom_point(size = 2) +  
   geom_line(size = 0.5) +
@@ -742,7 +797,39 @@ ggplot(bf_collect_er1, aes(x = sample_size, y = logmean, group = Hypothesis,
   geom_ribbon(aes(ymin = logmean-logsd, ymax = logmean+logsd), alpha = 0.3, color=NA) +
   
   labs(x = "Sample Size", y = "log Bayes Factors") +
-  scale_shape_manual(values = c(23, 19)) +  # Use square for H0 and circle for H1
+  scale_shape_manual(values = c(19, 23)) +  # Use square for H0 and circle for H1
+  
+  scale_color_manual(values = c(c1_low, c2_high)) +
+  scale_fill_manual(values = c(c1_low, c2_high)) +
+  
+  theme_classic() +
+  theme(legend.title = element_blank(),
+        legend.position = "top",
+        legend.text = element_text(size = 8),
+        axis.title.x = element_text(vjust = -3),
+        axis.title.y = element_text(vjust = 3),
+        plot.margin = margin(b = 15, l=15)) +
+  
+  scale_x_continuous(breaks = bf_collect_er1$sample_size)
+
+#ggsave("TablesFigures/BF_updates ER int vs no int.jpeg",dpi=300,width = 4, height = 3)
+
+
+### no interaction vs. CL model
+
+bf_collect_er2 <- bf_collect_er2 %>%
+  mutate(logmean = rowMeans(bf_collect_er2[,3:length(bf_collect_er2)]),
+         logsd = apply((bf_collect_er2[,3:length(bf_collect_er2)]), 1, sd))
+
+bf_plot4 <- ggplot(bf_collect_er2, aes(x = sample_size, y = logmean, group = Hypothesis,
+                           shape = Hypothesis, color = Hypothesis, fill = Hypothesis)) +
+  geom_point(size = 2) +  
+  geom_line(size = 0.5) +
+  
+  geom_ribbon(aes(ymin = logmean-logsd, ymax = logmean+logsd), alpha = 0.3, color=NA) +
+  
+  labs(x = "Sample Size", y = "log Bayes Factors") +
+  scale_shape_manual(values = c(19, 15)) +
   
   scale_color_manual(values = c(c1_low, c3)) +
   scale_fill_manual(values = c(c1_low, c3)) +
@@ -755,44 +842,26 @@ ggplot(bf_collect_er1, aes(x = sample_size, y = logmean, group = Hypothesis,
         axis.title.y = element_text(vjust = 3),
         plot.margin = margin(b = 15, l=15)) +
   
-  scale_x_continuous(breaks = bf_collect$sample_size)
-
-ggsave("TablesFigures/BF_updates ER int vs no int.jpeg",dpi=300,width = 4, height = 3)
-
-
-### no interaction vs. CL model
-
-bf_collect_er3 <- bf_collect_er3 %>%
-  mutate(logmean = rowMeans(bf_collect_er3[,3:length(bf_collect_er3)]),
-         logsd = apply((bf_collect_er3[,3:length(bf_collect_er3)]), 1, sd))
-
-ggplot(bf_collect_er3, aes(x = sample_size, y = logmean, group = Hypothesis,
-                           shape = Hypothesis, color = Hypothesis, fill = Hypothesis)) +
-  geom_point(size = 2) +  
-  geom_line(size = 0.5) +
-  
-  geom_ribbon(aes(ymin = logmean-logsd, ymax = logmean+logsd), alpha = 0.3, color=NA) +
-  
-  labs(x = "Sample Size", y = "log Bayes Factors") +
-  scale_shape_manual(values = c(15, 19)) +  # Use square for H0 and circle for H1
-  
-  scale_color_manual(values = c(c2_high, c3)) +
-  scale_fill_manual(values = c(c2_high, c3)) +# Orange color for H0 and dark green for H1
-  
-  theme_classic() +
-  theme(legend.title = element_blank(),
-        legend.position = "top",
-        legend.text = element_text(size = 8),
-        axis.title.x = element_text(vjust = -3),
-        axis.title.y = element_text(vjust = 3),
-        plot.margin = margin(b = 15, l=15)) +
-  
-  scale_x_continuous(breaks = bf_collect_er3$sample_size)+
+  scale_x_continuous(breaks = bf_collect_er2$sample_size)+
   scale_y_continuous(breaks = c(-2,-1,-0.5,0,0.5,1,2))
 
-ggsave("TablesFigures/BF_updates ER cl vs no int.jpeg",dpi=300,width = 4, height = 3)
+#ggsave("TablesFigures/BF_updates ER cl vs no int.jpeg",dpi=300,width = 4, height = 3)
 ```
 
+**merge bf pltos**
+
+```{r, fig.width=7, fig.height=3.5}
+BF_er_plot <- (bf_plot3 | bf_plot4) +
+  plot_annotation(tag_levels = list(c("C", "D")), title = "Errors") +
+  plot_layout(guides = "collect") &
+  theme(plot.tag = element_text(face = "bold"),
+        legend.position='bottom',
+        plot.title = element_text(hjust = 0.5))
+
+# Display the combined plot
+print(BF_er_plot)
+ggsave("TablesFigures/Figure 5CD - BF Analysis.jpeg", dpi = 600, width = 7, height = 3.5)
+```
 
 ## Compare Errors, commission errors, and omission errors
 
@@ -816,11 +885,11 @@ ggplot(emm, aes(x = Evaluation, y = Probability, group = CL, shape= CL, color = 
   scale_x_discrete(labels = c("Control", "Evaluation")) +
   
   scale_shape_manual(values = c(15, 19),
-                     labels = c("low", "high")) +
+                     labels = c("Low", "High")) +
   scale_color_manual(values = c(c1_low, c2_high),
-                     labels = c("low", "high")) +
+                     labels = c("Low", "High")) +
   scale_linetype_manual(values=c(1,2),
-                        labels=c("low","high")) +
+                        labels=c("Low","High")) +
   
   theme_classic() +
   theme(legend.text = element_text(size = 8),
@@ -849,11 +918,11 @@ ggplot(emm, aes(x = Evaluation, y = Probability, group = CL, shape= CL, color = 
   scale_x_discrete(labels = c("Control", "Evaluation")) +
   
   scale_shape_manual(values = c(15, 19),
-                     labels = c("low", "high")) +
+                     labels = c("Low", "High")) +
   scale_color_manual(values = c(c1_low, c2_high),
-                     labels = c("low", "high")) +
+                     labels = c("Low", "High")) +
   scale_linetype_manual(values=c(1,2),
-                        labels=c("low","high")) +
+                        labels=c("Low","High")) +
   
   theme_classic() +
   theme(legend.text = element_text(size = 8),
