@@ -123,17 +123,30 @@ EDA_onesec_agg = EDA_main_onesec.groupby('counter')[["EDA", "ACCx","ACCy","ACCz"
 
 
 ### Plot EDA time series
-plt.figure(figsize=(10, 6))
+plt.figure(figsize=(7, 5))
 
-plt.plot(EDA_onesec_agg.counter,EDA_onesec_agg.EDA_zw, c="orange", linewidth=1, label="mean EDA (zw)")
-plt.plot(EDA_onesec_agg.counter,EDA_onesec_agg.EDA_pr, c="blue", alpha= 0.7, linewidth=1, label="Mean EDA - processed")
+plt.plot(EDA_onesec_agg.counter,EDA_onesec_agg.EDA_zw, c="#FED789", linewidth=1, label="Electrodermal Activity (z-Standardised)")
+#plt.plot(EDA_onesec_agg.counter,EDA_onesec_agg.EDA_pr, c="blue", alpha= 0.7, linewidth=1, label="Averaged EDA")
 
-plt.axvline(max(EDA_onesec_agg.counter)/2, c="red", linestyle="--", label = "Condition Switch")
-plt.ylabel("raw EDA")
-plt.xlabel("Time (sec)")
-plt.legend(loc=2)
+plt.axvline(max(EDA_onesec_agg.counter)/2, c="#3C304B", linestyle="--", label = "Condition Switch")
+plt.ylabel("Electrodermal Activity (EDA)", fontsize = 12)
+plt.xlabel("Social Evaluation", fontsize = 12)
 
-#plt.savefig('TablesFigures/processed Eda over time.png', bbox_inches="tight")
+ax = plt.gca()
+ax.spines['top'].set_visible(False)
+ax.spines['right'].set_visible(False)
+
+# Calculate positions for custom ticks
+x_max = max(EDA_onesec_agg.counter)
+tick_positions = [x_max / 4, 3 * x_max / 4]  # First quarter and third quarter
+
+# Set custom x-axis ticks and labels
+plt.xticks(tick_positions, ["Control", "Evaluation"], fontsize=10, color='grey')
+plt.yticks(fontsize=10, color='grey')
+
+plt.savefig('TablesFigures/Figure 3 - EDA timeseries.png', bbox_inches="tight",
+            dpi = 600)
+
 
 
 ### Plot motion
