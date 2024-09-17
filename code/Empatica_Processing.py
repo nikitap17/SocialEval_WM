@@ -123,14 +123,15 @@ EDA_onesec_agg = EDA_main_onesec.groupby('counter')[["EDA", "ACCx","ACCy","ACCz"
 
 
 ### Plot EDA time series
-plt.figure(figsize=(7, 5))
+plt.figure(figsize=(8, 4.5))
 
-plt.plot(EDA_onesec_agg.counter,EDA_onesec_agg.EDA_zw, c="#FED789", linewidth=1, label="Electrodermal Activity (z-Standardised)")
+plt.plot(EDA_onesec_agg.counter,EDA_onesec_agg.EDA_zw, c="#FED789", linewidth=1.5)
 #plt.plot(EDA_onesec_agg.counter,EDA_onesec_agg.EDA_pr, c="blue", alpha= 0.7, linewidth=1, label="Averaged EDA")
 
-plt.axvline(max(EDA_onesec_agg.counter)/2, c="#3C304B", linestyle="--", label = "Condition Switch")
-plt.ylabel("Electrodermal Activity (EDA)", fontsize = 12)
-plt.xlabel("Social Evaluation", fontsize = 12)
+plt.axvline(max(EDA_onesec_agg.counter)/2, c="#3C304B", linestyle="--",
+            linewidth = 3, label = "Condition Switch")
+plt.ylabel("Electrodermal Activity (EDA)", fontsize = 11)
+plt.xlabel("Social Evaluation", fontsize = 11)
 
 ax = plt.gca()
 ax.spines['top'].set_visible(False)
@@ -141,8 +142,9 @@ x_max = max(EDA_onesec_agg.counter)
 tick_positions = [x_max / 4, 3 * x_max / 4]  # First quarter and third quarter
 
 # Set custom x-axis ticks and labels
-plt.xticks(tick_positions, ["Control", "Evaluation"], fontsize=10, color='grey')
-plt.yticks(fontsize=10, color='grey')
+plt.xticks(tick_positions, ["Control", "Evaluation"], fontsize=9, color = "#202020")
+plt.yticks(fontsize=9, color = "#202020")
+plt.legend()
 
 plt.savefig('TablesFigures/Figure 3 - EDA timeseries.png', bbox_inches="tight",
             dpi = 600)

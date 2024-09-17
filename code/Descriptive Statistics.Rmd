@@ -382,7 +382,7 @@ combined_plot <- (rt_plot | errors_plot) +
 
 # Display the combined plot
 print(combined_plot)
-ggsave("TablesFigures/Figure A1 - WM Performance Raincloud_plot.jpeg",dpi=600, w= 9, h = 4)
+ggsave("TablesFigures/Figure A1 - WM Performance Raincloud_plot.jpeg",dpi=600, w= 9.5, h = 4)
 ```
 
 ## Perceived Stress (ADES)
@@ -442,14 +442,14 @@ combined_plot <- (eustress_plot | distress_plot) +
 
 # Display the combined plot
 print(combined_plot)
-ggsave("TablesFigures/Figure A2 - ADES Raincloud_plot.jpeg",dpi=600, w= 9, h = 4)
+ggsave("TablesFigures/Figure A2 - ADES Raincloud_plot.jpeg",dpi=600, w= 9.5, h = 4)
 ```
 
 ## Mental Demand
 
 ```{r, fig.width=7, fig.height=5}
-meanp_size = 2.5
-p_size = 1.5
+meanp_size = 3
+p_size = 2
 
 mental_df <- raincloud_prepare_data(data = agg_df,
                                 id_variable = "ID",

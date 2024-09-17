@@ -1,5 +1,5 @@
-meanp_size = 1.5
-p_size = 1
+meanp_size = 2.4
+p_size = 1.5
 raincloud_prepare_data <- function(data, id_variable, y_variable, within_factor, between_factor, within_levels, between_levels, jit_distance = 0.09, jit_seed = 2){
   d <- data.frame("id" = data[,id_variable],
                   "y_axis" = data[, y_variable],
