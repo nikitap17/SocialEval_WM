@@ -592,6 +592,7 @@ new_df$improvement <- ifelse(new_df$diff_err < 0,1,
                              ifelse(new_df$diff_err > 0, -1, 0))
 ```
 
+#### Relationship between Delta reaction time and Delta errors
 
 ```{r, fig.width=6, fig.height=4}
 mean_data <- new_df %>%
@@ -628,12 +629,8 @@ ggsave("TablesFigures/Figure 6 - Delta rt errors regression..jpeg",dpi=600, widt
 
 
 ```{r}
-lmm_df <- new_df %>% filter(improvement != 0)
-lmm_df$improvement <- factor(lmm_df$improvement)
-levels(lmm_df$improvement)
-
-lmm <- lmer(diff_rt ~ diff_err + CL + (1|ID), data = lmm_df, REML = T)
-lmm.int <- lmer(diff_rt ~ diff_err*CL + (1|ID), data = lmm_df, REML = T)
+lmm <- lmer(diff_rt ~ diff_err + CL + (1|ID), data = new_df, REML = T)
+lmm.int <- lmer(diff_rt ~ diff_err*CL + (1|ID), data = new_df, REML = T)
 AIC(lmm) - AIC(lmm.int)
 BIC(lmm) - BIC(lmm.int)
 
@@ -641,6 +638,25 @@ summary(lmm)
 effectsize(lmm)
 
 ```
+
+#### Difference in Delta reatcion time (improvements in RT) for participants who improved in accuracy vs deteriorated
+
+```{r}
+lmm_df <- new_df #%>% filter(improvement != 0)
+lmm_df$improvement <- factor(lmm_df$improvement, levels = c(1,0,-1))
+levels(lmm_df$improvement)
+
+lmm <- lmer(diff_rt ~ improvement + CL + (1|ID), data = lmm_df, REML = T)
+lmm.int <- lmer(diff_rt ~ improvement*CL + (1|ID), data = lmm_df, REML = T)
+AIC(lmm) - AIC(lmm.int)
+BIC(lmm) - BIC(lmm.int)
+
+summary(lmm)
+effectsize(lmm)
+estimate_means(lmm, ~improvement)
+```
+
+
 
 #### a) Participants who performed better under social evaluation
 
