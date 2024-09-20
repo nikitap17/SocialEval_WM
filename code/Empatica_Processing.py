@@ -7,33 +7,29 @@ Ceated on Sat Feb 17 13:50:25 2024
 
 import numpy as np
 import pandas as pd
-#from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
 import os
-#from pathlib import Path
 from scipy.stats import zscore
-#from functools import reduce
-#import statsmodels.api as sm
-#import statsmodels.formula.api as smf
-#from statsmodels.tools.sm_exceptions import ConvergenceWarning
 
 from Empatica_Functions import Empatica_data
 
 
 
-folder_path = os.getcwd() + "\\Data\\Physio_d\\Empatica"
+## Data Preparation
 
-person_IDs = [folder for folder in os.listdir(folder_path) if os.path.isdir(os.path.join(folder_path, folder))]
-### Empatica disconnected fo the following paticipant: 40122
+folder_path = "../Data/raw_data/raw_EDA/"
+person_IDs = [folder for folder in os.listdir(folder_path + "Empatica")]
+
+#### Empatica disconnected fo the following paticipant: 40122
 person_IDs = [ID for ID in person_IDs if ID != "40122"]
 
 
-## Process EDA and ACC for all participants
+### Process EDA and ACC for all participants
 processed_EDA = dict()
 processed_EDA_onesec = dict()
 for ID in person_IDs:
-    empatica_folder = os.getcwd() + '\\Data\\Physio_d' + "\\Empatica\\" + ID + "\\"
-    timing_folder = os.getcwd() + '\\Data\\Physio_d' + "\\Timing\\" + ID + "_timing_blocks.csv"
+    empatica_folder = folder_path + "Empatica/" + ID + "/"
+    timing_folder = folder_path + "Timing/" + ID + "_timing_blocks.csv"
 
 
     empatica_wrapper = Empatica_data(empatica_folder, timing_folder)
@@ -87,40 +83,27 @@ for ID in person_IDs:
 
 
 
-### Merging seperate dfs into a single main df
+### Merging seperate dfs into a single main df (including all participants)
 EDA_main = pd.concat(processed_EDA.values(), axis=0)
-EDA_main.to_csv(r"Data/Physio_d/EDA_main.csv", index=False)
+EDA_main.to_csv("../Data/clean_data/EDA_main.csv", index=False)
 
 EDA_main_onesec = pd.concat(processed_EDA_onesec.values(),axis=0)
-EDA_main_onesec.to_csv(r"Data/Physio_d/EDA_main_onesec.csv", index=False)
-
-
-
-
-### Removing motion artefacts by regressing motion parameters on EDA and extracting residuals
-## This was done in R
-EDA_main_onesec = pd.read_csv("Data/Physio_d/EDA_motion_R.csv").drop(columns=["Unnamed: 0"])
-
-
-
-
-######   Visualisation
+EDA_main_onesec.to_csv("../Data/clean_data/EDA_main_onesec.csv", index=False)
 
 
 ## Aggregate by common counter - Mean across participants and time
 
-# In order to aggregate correcly, we have to make sure that each participant has the same amounts of seconds
+# In order to aggregate correcly, we have to make sure that each participant has the same number of seconds (same condition lengths)
 number_counts = EDA_main_onesec['counter'].value_counts().reset_index()
 number_counts.columns = ['number', 'count']
 
 # trim data where counts is higher than 1088
 EDA_main_onesec = EDA_main_onesec.loc[EDA_main_onesec.counter <= 1088,]
-
-
-EDA_onesec_agg = EDA_main_onesec.groupby('counter')[["EDA", "ACCx","ACCy","ACCz","EDA_zw", "EDA_pr"]].mean().reset_index(level=0)
+EDA_onesec_agg = EDA_main_onesec.groupby('counter')[["EDA", "ACCx","ACCy","ACCz","EDA_zw"]].mean().reset_index(level=0)
 
 
 
+## Visualisation
 
 ### Plot EDA time series
 plt.figure(figsize=(8, 4.5))
@@ -148,16 +131,6 @@ plt.legend()
 
 plt.savefig('TablesFigures/Figure 3 - EDA timeseries.png', bbox_inches="tight",
             dpi = 600)
-
-
-
-### Plot motion
-
-plt.figure(figsize=(10, 6))
-
-plt.plot(EDA_onesec_agg.counter,zscore(EDA_onesec_agg.ACCx), linewidth=1, label="mean ACCx")
-plt.plot(EDA_onesec_agg.counter,zscore(EDA_onesec_agg.ACCy), linewidth=1, label="mean ACCy")
-plt.plot(EDA_onesec_agg.counter,zscore(EDA_onesec_agg.ACCz), linewidth=1, label="mean ACCz")
 
 
 
