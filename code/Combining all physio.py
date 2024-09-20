@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Mar  7 11:18:21 2024
-
-@author: nikit
-"""
-
 import numpy as np
 import pandas as pd
 from datetime import datetime, timedelta
