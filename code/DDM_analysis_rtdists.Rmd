@@ -25,15 +25,15 @@ c3 = "#453947"
 ```
 
 
-### Load data
+### Data Preparation
 
 ```{r}
-experiment_data <- read_csv("Data/clean_data/experiment_data.csv", show_col_types = FALSE)
-experiment_data$ID <- factor(experiment_data$ID)
-experiment_data$Evaluation <- factor(experiment_data$Evaluation)
-experiment_data$CL <- factor(experiment_data$CL, levels = c("low","high"))
-experiment_data$block <- factor(experiment_data$block)
-experiment_data$trial_block <- factor(experiment_data$trial_block)
+all_trials_df <- read_csv("../Data/clean_data/all_trials_df.csv", show_col_types = FALSE)
+all_trials_df$ID <- factor(all_trials_df$ID)
+all_trials_df$Evaluation <- factor(all_trials_df$Evaluation)
+all_trials_df$CL <- factor(all_trials_df$CL, levels = c("low","high"))
+all_trials_df$block <- factor(all_trials_df$block)
+all_trials_df$trial_block <- factor(all_trials_df$trial_block)
 ```
 
 ### Define LL optimisation function
@@ -56,7 +56,7 @@ ll_diffusion <- function(pars, datlist)
 ```{r}
 set.seed(42)
 
-data <- experiment_data[,c("ID","Target","Errors","RT_Raw","CL_evaluation")]
+data <- all_trials_df[,c("ID","Target","Errors","RT_Raw","CL_evaluation")]
 data <- data %>% filter(!is.na(RT_Raw))
 
 data <- mutate(data, response = case_when(
@@ -186,7 +186,7 @@ rtdist_df <- do.call(rbind, ddm_list)
 sum(rtdist_df$converge/nrow(rtdist_df))
 sum(rtdist_df$p.converge/nrow(rtdist_df))
 
-write_csv(rtdist_df, "Data/clean_data/ddm_df.csv")
+write_csv(rtdist_df, "../Data/clean_data/ddm_df.csv")
 ```
 
 ### correlation between estimated and recovered parameters
@@ -218,7 +218,7 @@ save_as_docx(table, path = "TablesFigures/Table S4 - DDM recov study.docx")
 # Group level analyses
 
 ```{r}
-rtdist_df <- read_csv("Data/clean_data/ddm_df.csv", show_col_types = FALSE)
+rtdist_df <- read_csv("../Data/clean_data/ddm_df.csv", show_col_types = FALSE)
 ```
 
 

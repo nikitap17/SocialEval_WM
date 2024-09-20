@@ -32,24 +32,24 @@ c3 = C_pallette[3]
 ### Data Preparation
 
 ```{r}
-main_df <- read_csv("Data/clean_data/main_df.csv", show_col_types = FALSE)
+main_df <- read_csv("../Data/clean_data/main_df.csv", show_col_types = FALSE)
 main_df$ID <- factor(main_df$ID)
 main_df$Evaluation <- factor(main_df$Evaluation)
 main_df$CL <- factor(main_df$CL, levels = c("low","high"))
 main_df$block <- factor(main_df$block)
 main_df$trial_block <- factor(main_df$trial_block)
 
-agg_df <- read_csv("Data/clean_data/agg_df.csv", show_col_types = FALSE)
+agg_df <- read_csv("../Data/clean_data/agg_df.csv", show_col_types = FALSE)
 agg_df$ID <- factor(agg_df$ID)
 agg_df$Evaluation <- factor(agg_df$Evaluation)
 agg_df$CL <- factor(agg_df$CL, levels = c("low","high"))
 
-experiment_data <- read_csv("Data/clean_data/experiment_data.csv", show_col_types = FALSE)
-experiment_data$ID <- factor(experiment_data$ID)
-experiment_data$Evaluation <- factor(experiment_data$Evaluation)
-experiment_data$CL <- factor(experiment_data$CL, levels = c("low","high"))
-experiment_data$block <- factor(experiment_data$block)
-experiment_data$trial_block <- factor(experiment_data$trial_block)
+all_trials_df <- read_csv("../Data/clean_data/all_trials_df.csv", show_col_types = FALSE)
+all_trials_df$ID <- factor(all_trials_df$ID)
+all_trials_df$Evaluation <- factor(all_trials_df$Evaluation)
+all_trials_df$CL <- factor(all_trials_df$CL, levels = c("low","high"))
+all_trials_df$block <- factor(all_trials_df$block)
+all_trials_df$trial_block <- factor(all_trials_df$trial_block)
 ```
 
 
@@ -382,13 +382,13 @@ bf_collect1 <- bf_collect %>%
   mutate(logmean = rowMeans(bf_collect[,3:length(bf_collect)]),
          logsd = apply((bf_collect[,3:length(bf_collect)]), 1, sd))
 
-write.csv(bf_collect1, "Data/clean_data/BFevidence_rt1.csv", row.names = F)
+write.csv(bf_collect1, "../Data/clean_data/BFevidence_rt1.csv", row.names = F)
 ```
 
 Plot 1
 
 ```{r}
-bf_collect1 <- read_csv("Data/clean_data/BFevidence_rt1.csv", show_col_types = F)
+bf_collect1 <- read_csv("../Data/clean_data/BFevidence_rt1.csv", show_col_types = F)
 
 bf_plot1 <- ggplot(bf_collect1, aes(x = sample_size, y = logmean, group = Hypothesis,
                        shape = Hypothesis, color = Hypothesis, fill = Hypothesis)) +
@@ -454,14 +454,14 @@ bf_collect2 <- bf_collect %>%
   mutate(logmean = rowMeans(bf_collect[,3:length(bf_collect)]),
          logsd = apply((bf_collect[,3:length(bf_collect)]), 1, sd))
 
-write.csv(bf_collect2, "Data/clean_data/BFevidence_rt2.csv", row.names = F)
+write.csv(bf_collect2, "../Data/clean_data/BFevidence_rt2.csv", row.names = F)
 
 ```
 
 Plot 2
 
 ```{r}
-bf_collect2 <- read_csv("Data/clean_data/BFevidence_rt2.csv", show_col_types = F)
+bf_collect2 <- read_csv("../Data/clean_data/BFevidence_rt2.csv", show_col_types = F)
 
 bf_plot2 <- ggplot(bf_collect2, aes(x = sample_size, y = logmean, group = Hypothesis,
                        shape = Hypothesis, color = Hypothesis, fill = Hypothesis)) +
@@ -516,10 +516,10 @@ Model Selection
 
 ```{r}
 m1 <- glmer(Errors ~ CL*Evaluation + (1|ID),
-           data=experiment_data, family = binomial)
+           data=all_trials_df, family = binomial)
 
 m2 <- glmer(Errors ~ CL*Evaluation + (CL+Evaluation|ID),
-            data=experiment_data, family = binomial)
+            data=all_trials_df, family = binomial)
 
 paste("AIC: ",AIC(m1)-AIC(m2))
 paste("BIC: ",BIC(m1)-BIC(m2))
@@ -536,7 +536,7 @@ Compare interaction and no interaction models
 
 ```{r}
 m1a <- glmer(Errors ~ CL+Evaluation + (1|ID),
-             data=experiment_data, family = binomial)
+             data=all_trials_df, family = binomial)
 AIC(m1a)-AIC(m1)
 BIC(m1a)-BIC(m1)
 
@@ -562,13 +562,13 @@ Extend the model with block and trial block
 
 ```{r}
 m3 <- glmer(Errors ~ block + CL+Evaluation + (1|ID),
-           data=experiment_data, family = binomial)
+           data=all_trials_df, family = binomial)
 
 m4 <- glmer(Errors ~ trial_block + CL+Evaluation + (1|ID),
-           data=experiment_data, family = binomial)
+           data=all_trials_df, family = binomial)
 
 m5 <- glmer(Errors ~ block + trial_block + CL+Evaluation + (1|ID),
-           data=experiment_data, family = binomial)
+           data=all_trials_df, family = binomial)
 
 
 AIC(m3,m4,m5)[order(AIC(m3, m4, m5)$AIC),]
@@ -641,7 +641,7 @@ Evaluation and timing block
 
 ```{r}
 m5aa <- glmer(Errors ~ block*trial_block*Evaluation*CL + (1|ID),
-            data=experiment_data, family = binomial)
+            data=all_trials_df, family = binomial)
 
 emm_eu <- estimate_means(m5aa, ~Evaluation*trial_block)
 
@@ -731,7 +731,7 @@ bf_collect_er2 <- data.frame(sample_size = c(s_size,s_size),
                                             rep("CL Model",length(s_size))))
 
 permutations <- as.character(seq(1,100))
-participants <- unique (experiment_data$ID)
+participants <- unique (all_trials_df$ID)
 
 for (p in permutations){
   
@@ -748,11 +748,11 @@ for (p in permutations){
     
     # calculate BICs for each model and subset
     no.int_m <- BIC(glmer(Errors ~ block + trial_block + CL+Evaluation + (1|ID),
-                      data=subset(experiment_data, ID %in% participants[1:n]), family = binomial))
+                      data=subset(all_trials_df, ID %in% participants[1:n]), family = binomial))
     int_m <- BIC(glmer(Errors ~ block + trial_block + CL*Evaluation + (1|ID),
-                      data=subset(experiment_data, ID %in% participants[1:n]), family = binomial))
+                      data=subset(all_trials_df, ID %in% participants[1:n]), family = binomial))
     cl_m <- BIC(glmer(Errors ~ block + trial_block + CL + (1|ID),
-                  data=subset(experiment_data, ID %in% participants[1:n]), family = binomial))
+                  data=subset(all_trials_df, ID %in% participants[1:n]), family = binomial))
 
     # calculate approximate BFs for each comparison
     no.int1 <- c(no.int1, log10(exp((int_m - no.int_m)/2)))
@@ -772,16 +772,16 @@ for (p in permutations){
   colnames(bf_collect_er2) <- c(cln,p)
 }
 
-write.csv(bf_collect_er1, "Data/clean_data/BFevidence_er1.csv", row.names =  F)
-write.csv(bf_collect_er2, "Data/clean_data/BFevidence_er2.csv", row.names =  F)
+write.csv(bf_collect_er1, "../Data/clean_data/BFevidence_er1.csv", row.names =  F)
+write.csv(bf_collect_er2, "../Data/clean_data/BFevidence_er2.csv", row.names =  F)
 
 ```
 
 Plotting
 
 ```{r}
-bf_collect_er1 <- read_csv("Data/clean_data/BFevidence_er1.csv", show_col_types = F)
-bf_collect_er2 <- read_csv("Data/clean_data/BFevidence_er2.csv", show_col_types = F)
+bf_collect_er1 <- read_csv("../Data/clean_data/BFevidence_er1.csv", show_col_types = F)
+bf_collect_er2 <- read_csv("../Data/clean_data/BFevidence_er2.csv", show_col_types = F)
 
 ### additive vs. interaction
 
@@ -869,7 +869,7 @@ commission errors
 
 ```{r}
 cER_m <- glmer(cER ~ block + trial_block + CL+Evaluation + (1|ID),
-               data=experiment_data, family = binomial)
+               data=all_trials_df, family = binomial)
 summary(cER_m)
 emm <- estimate_means(cER_m, ~CL*Evaluation)
 
@@ -902,7 +902,7 @@ omission errors
 
 ```{r}
 oER_m <- glmer(oER ~ block + trial_block + CL+Evaluation + (1|ID),
-            data=experiment_data, family = binomial)
+            data=all_trials_df, family = binomial)
 summary(oER_m)
 emm <- estimate_means(oER_m, ~CL*Evaluation)
 
@@ -990,13 +990,13 @@ Errors
 
 ```{r}
 m1 <- glmer(Errors ~ block + trial_block + CL + scale(Eustress) + (1|ID),
-           data=experiment_data, family = binomial)
+           data=all_trials_df, family = binomial)
 m2 <- glmer(Errors ~ block + trial_block + CL + scale(Distress) + (1|ID),
-           data=experiment_data, family = binomial)
+           data=all_trials_df, family = binomial)
 m3 <- glmer(Errors ~ block + trial_block + CL + scale(Eustress) + scale(Distress) + (1|ID),
-           data=experiment_data, family = binomial)
+           data=all_trials_df, family = binomial)
 m4 <- glmer(Errors ~ block + trial_block + CL + scale(Eustress)*scale(Distress) + (1|ID),
-           data=experiment_data, family = binomial)
+           data=all_trials_df, family = binomial)
 
 AIC(m1,m2,m3,m4)[order(AIC(m1,m2,m3,m4)$AIC),] #m3
 BIC(m1,m2,m3,m4)[order(BIC(m1,m2,m3,m4)$BIC),] #m3
@@ -1006,7 +1006,7 @@ perc.stress.m <- m3
 summary(perc.stress.m)
 model_parameters(perc.stress.m, exponentiate = T)
 model_parameters(glmer(Errors ~ block + trial_block + CL + Eustress + Distress + (1|ID),
-           data=experiment_data, family = binomial))
+           data=all_trials_df, family = binomial))
 ```
 
 Get table for model comparisons

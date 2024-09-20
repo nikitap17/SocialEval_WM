@@ -5,7 +5,7 @@ pkgs <- c("tidyverse",
 
 lapply(pkgs, library, character.only=TRUE)
 
-
+proj_dir <- getwd()
 
 
 ##### NASA-TLX and ADES ----------------------------------------------------------
@@ -14,7 +14,7 @@ lapply(pkgs, library, character.only=TRUE)
 
 # first participant in experiment: 792672; started with 2-back
 
-TLX_and_ADES <- read_csv("Data/Raw_questionnaires/TLX and ADES.csv")
+TLX_and_ADES <- read_csv("../Data/raw_data/raw_questionnaires/TLX and ADES.csv")
 View(TLX_and_ADES)
 
 TLX_and_ADES <- TLX_and_ADES[,-2:-10] #exclude irrelevant columns
@@ -97,7 +97,7 @@ TLX_and_ADES <- TLX_and_ADES %>% group_by(ID) %>%
 
 
 ## Save dataframe
-write.csv(TLX_and_ADES, "Data/clean_data/TLX_and_ADES_clean.csv", row.names=FALSE)
+write.csv(TLX_and_ADES, "../Data/clean_data/TLX_and_ADES_clean.csv", row.names=FALSE)
 
 
 ##### Reliability analysis of questionnaire scales -------------------------------
@@ -111,7 +111,7 @@ cronbach.alpha(rel_NASA, CI = TRUE)
 
 ##### Socio-Demographic Questionnaire (Post-Experiment Questionnaire) ----------
 
-PostExp <- read_csv("Data/Raw_questionnaires/PostExperimentQuestions.csv")
+PostExp <- read_csv("../Data/raw_data/raw_questionnaires/PostExperimentQuestions.csv")
 View(PostExp)
 PostExp <- PostExp[,11:length(PostExp)]
 colnames(PostExp) <- c('ID','Age','Sex', "Gender", "Studies", "Medication",
@@ -120,14 +120,14 @@ colnames(PostExp) <- c('ID','Age','Sex', "Gender", "Studies", "Medication",
 PostExp <- PostExp[-1:-2,] #exclude 2 first irrelevant rows
 PostExp <- PostExp[-1:-6,] #exclude all pilot participants (up to 792672)
 
-write.csv(PostExp, "Data/clean_data/PostExp_clean.csv", row.names=FALSE)
+write.csv(PostExp, "../Data/clean_data/PostExp_clean.csv", row.names=FALSE)
 
 
 
 
 ##### Performance Data ---------------------------------------------------------
 
-setwd("Data/Raw_performance")
+setwd("../Data/raw_data/raw_performance")
 
 files = list.files(pattern="\\.xlsx$")
 id_list <- files
@@ -181,11 +181,9 @@ remove(s1n2b2,s1n3b2, s2n2b1,s2n3b1,
        control_n2_b1,control_n2_b2,control_n3_b1,control_n3_b2,
        STRESS_2n_b1,STRESS_2n_b2 ,STRESS_3n_b1 ,STRESS_3n_b2,a,big_df)
 
-setwd("..")
-setwd("..")
-getwd()
+setwd(proj_dir)
 
-write.csv(performance_df, "Data/clean_data/Performance_clean.csv", row.names = F)
+write.csv(performance_df, "../Data/clean_data/Performance_clean.csv", row.names = F)
 for (i in id_list){rm(list = i)}
 
 
@@ -229,53 +227,53 @@ remove(raining_aggregated_RT,training_aggregated,training_RT)
 
 
 ### Experiment Data
-experiment_data <- subset(performance_df, performance_df$phase == "experiment")
+all_trials_df <- subset(performance_df, performance_df$phase == "experiment")
 
-experiment_data$Evaluation <- ifelse(grepl("STRESS", experiment_data$session),
+all_trials_df$Evaluation <- ifelse(grepl("STRESS", all_trials_df$session),
                                  "1", "0")
-experiment_data$CL <- ifelse(grepl("n2", experiment_data$session)|grepl("2n", experiment_data$session),
+all_trials_df$CL <- ifelse(grepl("n2", all_trials_df$session)|grepl("2n", all_trials_df$session),
                            "low", "high")
-experiment_data$block <- ifelse(grepl("b2", experiment_data$session),
+all_trials_df$block <- ifelse(grepl("b2", all_trials_df$session),
                              "2", "1")
 
 
 # Split each main block into 3 time blocks, separate for two main blocks (6 blocks in total)
 
-experiment_data$trial_block <- ifelse(experiment_data$Trial <= 12, 0, ifelse(experiment_data$Trial <= 22,1,2))
+all_trials_df$trial_block <- ifelse(all_trials_df$Trial <= 12, 0, ifelse(all_trials_df$Trial <= 22,1,2))
 
 
 
 
 ## Aggregate across ID,CL,Evaluation,block, and trial_block
 
-exp_1 <- aggregate(experiment_data$Errors, by = list(experiment_data$ID,
-                                                     experiment_data$CL,
-                                                     experiment_data$Evaluation,
-                                                     experiment_data$block,
-                                                     experiment_data$trial_block),
+exp_1 <- aggregate(all_trials_df$Errors, by = list(all_trials_df$ID,
+                                                     all_trials_df$CL,
+                                                     all_trials_df$Evaluation,
+                                                     all_trials_df$block,
+                                                     all_trials_df$trial_block),
                    FUN = sum, na.rm = T)
 colnames(exp_1) <- c("ID", "CL", "Evaluation", "block", "trial_block", "Errors")
 
 
-exp_2 <- aggregate(experiment_data$cER, by = list(experiment_data$ID,
-                                                     experiment_data$CL,
-                                                     experiment_data$Evaluation,
-                                                     experiment_data$block,
-                                                     experiment_data$trial_block),
+exp_2 <- aggregate(all_trials_df$cER, by = list(all_trials_df$ID,
+                                                     all_trials_df$CL,
+                                                     all_trials_df$Evaluation,
+                                                     all_trials_df$block,
+                                                     all_trials_df$trial_block),
                    FUN = sum, na.rm = T)
 colnames(exp_2) <- c("ID", "CL", "Evaluation", "block", "trial_block", "cER")
 
 
-exp_3 <- aggregate(experiment_data$oER, by = list(experiment_data$ID,
-                                                     experiment_data$CL,
-                                                     experiment_data$Evaluation,
-                                                     experiment_data$block,
-                                                     experiment_data$trial_block),
+exp_3 <- aggregate(all_trials_df$oER, by = list(all_trials_df$ID,
+                                                     all_trials_df$CL,
+                                                     all_trials_df$Evaluation,
+                                                     all_trials_df$block,
+                                                     all_trials_df$trial_block),
                    FUN = sum, na.rm = T)
 colnames(exp_3) <- c("ID", "CL", "Evaluation", "block", "trial_block", "oER")
 
 
-exp_RT <- experiment_data
+exp_RT <- all_trials_df
 exp_aggregated_RT <- aggregate(exp_RT$RT_Raw, by = list(exp_RT$ID,
                                                     exp_RT$CL,
                                                     exp_RT$Evaluation,
@@ -313,10 +311,10 @@ TLX_and_ADES2 <- TLX_and_ADES2[, -1]
 main_df <- left_join(main_df, TLX_and_ADES2, by=c('ID',"CL","Evaluation"))
 
 
-experiment_data$ID <- as.numeric(experiment_data$ID)
-experiment_data$Evaluation <- as.character(experiment_data$Evaluation)
-experiment_data$CL <- as.character(experiment_data$CL)
-experiment_data <- left_join(experiment_data, TLX_and_ADES2, by=c('ID',"CL","Evaluation"))
+all_trials_df$ID <- as.numeric(all_trials_df$ID)
+all_trials_df$Evaluation <- as.character(all_trials_df$Evaluation)
+all_trials_df$CL <- as.character(all_trials_df$CL)
+all_trials_df <- left_join(all_trials_df, TLX_and_ADES2, by=c('ID',"CL","Evaluation"))
 
 
 
@@ -334,13 +332,13 @@ experiment_data <- left_join(experiment_data, TLX_and_ADES2, by=c('ID',"CL","Eva
   #Accordingly, trial_block 2 - block 1 -3back - Evaluation will be omitted
   # for this participant.
 
-manual <- subset(experiment_data, ID=="727655" & block=="1" & trial_block=="2"
+manual <- subset(all_trials_df, ID=="727655" & block=="1" & trial_block=="2"
                  & CL=="high" &Evaluation== "1")
 manual[2:5] <- NA
 manual
 
-experiment_data[experiment_data$ID=="727655" & experiment_data$block=="1" & experiment_data$trial_block=="2"
-        & experiment_data$CL=="high" & experiment_data$Evaluation== "1",] <- manual
+all_trials_df[all_trials_df$ID=="727655" & all_trials_df$block=="1" & all_trials_df$trial_block=="2"
+        & all_trials_df$CL=="high" & all_trials_df$Evaluation== "1",] <- manual
                
            
 manual <- subset(main_df, ID=="727655" & block=="1" & trial_block=="2"
@@ -357,16 +355,16 @@ main_df[main_df$ID=="727655" & main_df$block=="1" & main_df$trial_block=="2"
   # block 2, 2back under Evaluation. This can be seen in the unusually high RT and most committed
   #errors.
   # Accordingly, results for trial_block 2, block 2, 2back under Evaluation will be omitted.
-manual <- subset(experiment_data, ID=="511327" & block=="1" & trial_block=="2"
+manual <- subset(all_trials_df, ID=="511327" & block=="1" & trial_block=="2"
                  & CL=="high" &Evaluation== "1")
 manual[2:5] <- NA
 manual
 
-experiment_data[experiment_data$ID=="511327" & experiment_data$block=="1" & experiment_data$trial_block=="2"
-                & experiment_data$CL=="high" & experiment_data$Evaluation== "1",] <- manual
+all_trials_df[all_trials_df$ID=="511327" & all_trials_df$block=="1" & all_trials_df$trial_block=="2"
+                & all_trials_df$CL=="high" & all_trials_df$Evaluation== "1",] <- manual
 
 ## calculate the ratio score for eustress and distress
-experiment_data$ratio <- experiment_data$Eustress/experiment_data$Distress
+all_trials_df$ratio <- all_trials_df$Eustress/all_trials_df$Distress
 
 
 manual <- subset(main_df, ID=="511327" & block=="2" & trial_block=="2"
@@ -382,8 +380,8 @@ main_df$ratio <- main_df$Eustress/main_df$Distress
 
 
 ### Save data frames -----------------------------------------------------------
-write.csv(experiment_data, "Data/clean_data/experiment_data.csv", row.names = F)
-write.csv(main_df, "Data/clean_data/main_df.csv", row.names = F)
+write.csv(all_trials_df, "../Data/clean_data/all_trials_df.csv", row.names = F)
+write.csv(main_df, "../Data/clean_data/main_df.csv", row.names = F)
 
 
 
@@ -410,7 +408,7 @@ agg_df <- inner_join(agg_df, agg_df2, by=c('ID',"CL","Evaluation"))
 ## calculate the ratio score for eustress and distress
 agg_df$ratio <- agg_df$Eustress/agg_df$Distress
 
-write.csv(agg_df, "Data/clean_data/agg_df.csv", row.names = F)
+write.csv(agg_df, "../Data/clean_data/agg_df.csv", row.names = F)
 
 
 
@@ -418,7 +416,7 @@ write.csv(agg_df, "Data/clean_data/agg_df.csv", row.names = F)
 ##### Prepare EDA data for exploratory analysis --------------------------------
 
 # EDA was organised using the python script "Empatica_Processing.py"
-EDA_df <- read_csv("Data/Physio_d/EDA_main.csv")
+EDA_df <- read_csv("../Data/clean_data/EDA_main.csv")
 EDA_df <- subset(EDA_df, EDA_df$condition != "resting" & EDA_df$condition !=  "break" )
 
 # Derive conditions
@@ -435,9 +433,9 @@ EDA_agg <- EDA_df %>%
 
 # Since the EDA response is missing for participant 40122, their data has to be excluded from agg_df
 agg_df_eda <- subset(agg_df, ID != "40122")
-agg_EDA <- inner_join(agg_df_eda, EDA_agg, by=c('ID',"CL","Evaluation"))
+aggEDA_df <- inner_join(agg_df_eda, EDA_agg, by=c('ID',"CL","Evaluation"))
 
-write.csv(agg_EDA, "Data/clean_data/agg_EDA.csv", row.names = F)
+write.csv(aggEDA_df, "../Data/clean_data/aggEDA_df.csv", row.names = F)
 
 
 remove(df_list,exp_1,exp_2,exp_3,agg_df_eda,agg_df2,EDA_agg,EDA_df,exp_aggregated_RT,

@@ -26,36 +26,27 @@ c2_high = "#476F84"
 c3 = "#453947"
 ```
 
-### Load data
-
-```{r}
-TLX_and_ADES <- read_csv("Data/clean_data/TLX_and_ADES_clean.csv", show_col_types = FALSE)
-PostExp <- read_csv("Data/clean_data/PostExp_clean.csv", show_col_types = FALSE)
-agg_df <- read_csv("Data/clean_data/agg_df.csv", show_col_types = FALSE)
-main_df <- read_csv("Data/clean_data/main_df.csv", show_col_types = FALSE)
-```
-
 ### Data Preparation
 
 ```{r}
-main_df <- read_csv("Data/clean_data/main_df.csv", show_col_types = FALSE)
+main_df <- read_csv("../Data/clean_data/main_df.csv", show_col_types = FALSE)
 main_df$ID <- factor(main_df$ID)
 main_df$Evaluation <- factor(main_df$Evaluation)
 main_df$CL <- factor(main_df$CL, levels = c("low","high"))
 main_df$block <- factor(main_df$block)
 main_df$trial_block <- factor(main_df$trial_block)
 
-agg_df <- read_csv("Data/clean_data/agg_df.csv", show_col_types = FALSE)
+agg_df <- read_csv("../Data/clean_data/agg_df.csv", show_col_types = FALSE)
 agg_df$ID <- factor(agg_df$ID)
 agg_df$Evaluation <- factor(agg_df$Evaluation)
 agg_df$CL <- factor(agg_df$CL,levels = c("low","high"))
 
-TLX_and_ADES <- read_csv("Data/clean_data/TLX_and_ADES_clean.csv", show_col_types = FALSE)
+TLX_and_ADES <- read_csv("../Data/clean_data/TLX_and_ADES_clean.csv", show_col_types = FALSE)
 TLX_and_ADES$ID <- factor(TLX_and_ADES$ID)
 TLX_and_ADES$Evaluation <- factor(TLX_and_ADES$Evaluation)
 TLX_and_ADES$CL <- factor(TLX_and_ADES$CL,levels = c("low","high"))
 
-PostExp <- read_csv("Data/clean_data/PostExp_clean.csv", show_col_types = FALSE)
+PostExp <- read_csv("../Data/clean_data/PostExp_clean.csv", show_col_types = FALSE)
 ```
 
 ## 
@@ -79,7 +70,7 @@ PostExp %>%
   dplyr::summarise(M = mean(Age), SD = sd(Age),
                    min = min(Age), max = max(Age), n = n()) %>% data.frame()
 
-PostExp %>% select(Age) %>% count() %>%
+PostExp %>% dplyr::select(Age) %>% count() %>%
   mutate( "%" = round(freq / sum(freq) * 100))
 ```
 
@@ -110,7 +101,7 @@ descriptives_Errors_all
 Omission errors
 
 ```{r}
-agg_df %>% group_by(ID) %>% select(oER) %>% count() %>%
+agg_df %>% group_by(ID) %>% dplyr::select(oER) %>% count() %>%
   mutate( "%" = round(freq / sum(freq) * 100))
 ```
 

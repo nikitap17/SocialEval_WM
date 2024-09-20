@@ -10,6 +10,29 @@ library(lmerTest)
 library(BayesFactor)
 ```
 
+### Data Preparation
+
+```{r}
+main_df <- read_csv("../Data/clean_data/main_df.csv", show_col_types = FALSE)
+main_df$ID <- factor(main_df$ID)
+main_df$Evaluation <- factor(main_df$Evaluation)
+main_df$CL <- factor(main_df$CL, levels = c("low","high"))
+main_df$block <- factor(main_df$block)
+main_df$trial_block <- factor(main_df$trial_block)
+
+agg_df <- read_csv("../Data/clean_data/agg_df.csv", show_col_types = FALSE)
+agg_df$ID <- factor(agg_df$ID)
+agg_df$Evaluation <- factor(agg_df$Evaluation)
+agg_df$CL <- factor(agg_df$CL,levels = c("low","high"))
+
+TLX_and_ADES <- read_csv("../Data/clean_data/TLX_and_ADES_clean.csv", show_col_types = FALSE)
+TLX_and_ADES$ID <- factor(TLX_and_ADES$ID)
+TLX_and_ADES$Evaluation <- factor(TLX_and_ADES$Evaluation)
+TLX_and_ADES$CL <- factor(TLX_and_ADES$CL,levels = c("low","high"))
+
+PostExp <- read_csv("../Data/clean_data/PostExp_clean.csv", show_col_types = FALSE)
+```
+
 # Manipulation Checks
 
 ## Checking whether participants performed above chance
@@ -52,7 +75,7 @@ ggplot(descriptives_Mental, aes(x = Evaluation, y = M, group = CL, color = CL)) 
 ```
 
 
-## Social Evaluation Evaluation'
+## Social Evaluation
 
 After the experiment, participants were asked how they felt during the evaluation phase and whether they had questions. If they came up themselves with the fact that they were sure the observed people were not live, they did not pass the manipulation check. If they had doubts but were not sure, they were labelled "sceptical", but passed the check. Participants who were surprised by the fake observation also passed the check. In total, 33 participants passed the check (14 surprised and 19 sceptical). 10 participants did not pass the check. However, since one experimenter was in the same room "observing" the participants, participants nevertheless felt observed and stressed, which is visible in the physiological data. Thus, we conducted one analysis with the entire sample (N=43) and another analysis on the reduced sample (N=33). Subsequently, the results are compared.
 
@@ -191,7 +214,7 @@ boxplot(err_diff ~ CL, data = df,
 outlier <- df %>% group_by(CL) %>% identify_outliers(err_diff)
 out_diff_err <- data.frame(outlier[,c("ID","is.extreme")])
 out_diff_err
-write.csv(out_diff_err, "Data/clean_data/Outliers_errors.csv", row.names = F)
+write.csv(out_diff_err, "../Data/clean_data/Outliers_errors.csv", row.names = F)
 #No extreme outliers, value distribution seems to be adequate
 exclude_list_err <- sapply(out_diff_err$ID,as.character)
 
@@ -200,7 +223,7 @@ boxplot(RT_diff ~ CL, data = df,
 outlier <- df %>% group_by(CL) %>% identify_outliers(RT_diff)
 out_diff_rt <- data.frame(outlier[,c("ID","is.extreme")])
 out_diff_rt
-write.csv(out_diff_err, "Data/clean_data/Outliers_RT.csv", row.names = F)
+write.csv(out_diff_err, "../Data/clean_data/Outliers_RT.csv", row.names = F)
 #No extreme outliers, value distribution seems to be adequate
 exclude_list_RT <- sapply(out_diff_rt$ID,as.character)
 

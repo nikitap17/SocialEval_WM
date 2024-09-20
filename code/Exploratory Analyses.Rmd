@@ -32,24 +32,29 @@ c3 = C_pallette[3]
 ### Data Preparation
 
 ```{r}
-main_df <- read_csv("Data/clean_data/main_df.csv", show_col_types = FALSE)
+main_df <- read_csv("../Data/clean_data/main_df.csv", show_col_types = FALSE)
 main_df$ID <- factor(main_df$ID)
 main_df$Evaluation <- factor(main_df$Evaluation)
 main_df$CL <- factor(main_df$CL, levels = c("low","high"))
 main_df$block <- factor(main_df$block)
 main_df$trial_block <- factor(main_df$trial_block)
 
-agg_df <- read_csv("Data/clean_data/agg_df.csv", show_col_types = FALSE)
+agg_df <- read_csv("../Data/clean_data/agg_df.csv", show_col_types = FALSE)
 agg_df$ID <- factor(agg_df$ID)
 agg_df$Evaluation <- factor(agg_df$Evaluation)
 agg_df$CL <- factor(agg_df$CL,levels = c("low","high"))
 
-experiment_data <- read_csv("Data/clean_data/experiment_data.csv", show_col_types = FALSE)
-experiment_data$ID <- factor(experiment_data$ID)
-experiment_data$Evaluation <- factor(experiment_data$Evaluation)
-experiment_data$CL <- factor(experiment_data$CL,levels = c("low","high"))
-experiment_data$block <- factor(experiment_data$block)
-experiment_data$trial_block <- factor(experiment_data$trial_block)
+all_trials_df <- read_csv("../Data/clean_data/all_trials_df.csv", show_col_types = FALSE)
+all_trials_df$ID <- factor(all_trials_df$ID)
+all_trials_df$Evaluation <- factor(all_trials_df$Evaluation)
+all_trials_df$CL <- factor(all_trials_df$CL,levels = c("low","high"))
+all_trials_df$block <- factor(all_trials_df$block)
+all_trials_df$trial_block <- factor(all_trials_df$trial_block)
+
+aggEDA_df <- read_csv("../Data/clean_data/aggEDA_df.csv", show_col_types = FALSE)
+aggEDA_df$ID <- factor(aggEDA_df$ID)
+aggEDA_df$Evaluation <- factor(aggEDA_df$Evaluation)
+aggEDA_df$CL <- factor(aggEDA_df$CL,levels = c("low","high"))
 ```
 
 # Exploratory Analyses
@@ -74,7 +79,7 @@ lm.exp <- lm(scale(RT_Raw_1) ~ scale(RT_Raw_0) + I(exp(scale(RT_Raw_0))), data=w
 lm.qu <- lm(scale(RT_Raw_1) ~ scale(RT_Raw_0) + I(scale(RT_Raw_0^2)), data=wide_df)
 lm.cub <- lm(scale(RT_Raw_1) ~ scale(RT_Raw_0) + I(scale(RT_Raw_0^2))+ I(scale(RT_Raw_0^3)), data=wide_df)
 
-BIC(lm,lm.exp,lm.qu,lm.cub)[order(BIC(lm,lm.exp,lm.qu,lm.cub)$BIC),]
+BIC(lm.rt,lm.exp,lm.qu,lm.cub)[order(BIC(lm.rt,lm.exp,lm.qu,lm.cub)$BIC),]
 
 # Visualising
 lm <- lm(RT_Raw_1 ~ RT_Raw_0, data=wide_df)
@@ -129,7 +134,7 @@ effectsize(lm.er)
 ### DEPRICATED. Evaluation and CL effects on Target trials only
 
 ```{r}
-target_df <- experiment_data %>% filter(Target == 1)
+target_df <- all_trials_df %>% filter(Target == 1)
 ```
 
 Errors
@@ -156,7 +161,7 @@ summary(m1a)
 parameters(m1a, exponentiate = T)
 
 m1_nontargets <- glmer(Errors ~ CL+Evaluation + (1|ID),
-             data=experiment_data %>% filter(Target == 0), family = binomial)
+             data=all_trials_df %>% filter(Target == 0), family = binomial)
 parameters(m1_nontargets, exponentiate = T)
 
 
@@ -188,8 +193,6 @@ ggplot(emm_eu, aes(x = Evaluation, y = Probability, group = CL, shape= CL, color
         axis.title.y = element_text(vjust = 3),
         plot.margin = margin(b = 15, l=15))
 
-
-#ggsave("TablesFigures/EMM TARGET Errors interaction GLMM.jpeg",dpi=300,width = 4, height = 3)
 ```
 
 RT
@@ -235,8 +238,6 @@ ggplot(emm_eu, aes(x = Evaluation, y = Mean, group = CL, shape= CL, color = CL,
         axis.title.y = element_text(vjust = 3),
         plot.margin = margin(b = 15, l=15))
 
-
-#ggsave("TablesFigures/EMM TARGET RT interaction GLMM.jpeg",dpi=300,width = 4, height = 3)
 ```
 
 ### Perceived Performance
@@ -260,12 +261,12 @@ table <- nice_table(table,
                     note = c(
                       "* p < .05, ** p < .01, *** p < .001. CL = Cognitive Load; CI = Confidence Interval."
                     ))
-table
+#table
 
 
 ## Errors
 m <- glmer(Errors ~ block + trial_block + CL + scale(Eustress) + scale(Distress) + scale(Performance) + (1|ID),
-            data=experiment_data, family = binomial)
+            data=all_trials_df, family = binomial)
 model_parameters(m, exponentiate = T)
 summary(m)
 
@@ -290,14 +291,14 @@ table <- nice_table(table,
                     note = c(
                       "* p < .05, ** p < .01, *** p < .001. CL = Cognitive Load; CI = Confidence Interval."
                     ))
-table
+#table
 ```
 
 #### Perceived Performance and eustress/distress
 
 ```{r}
 gl.perf.er <- glmer(Errors ~ block + trial_block + CL + Evaluation + scale(Performance)+scale(ratio) + (1|ID),
-            data=experiment_data, family = binomial)
+            data=all_trials_df, family = binomial)
 summary(gl.perf.er)
 model_parameters(gl.perf.er)
 
@@ -350,7 +351,6 @@ ggplot(emm, aes(x = Evaluation, y = Mean, group = CL, color=CL,shape=CL, linetyp
   
   scale_x_discrete(labels = c("Control", "Evaluation"))
 
-#ggsave("TablesFigures/Perceived Mental.jpeg",dpi=300,width = 4, height = 3)
 # greater effect in CL high group
 ```
 
@@ -390,7 +390,6 @@ ggplot(emm, aes(x = Evaluation, y = Mean, group = CL, color=CL,shape=CL, linetyp
   
   scale_x_discrete(labels = c("Control", "Evaluation"))
 
-#ggsave("TablesFigures/Perceived Temporal.jpeg",dpi=300,width = 4, height = 3)
 ```
 
 ### EDA
@@ -399,16 +398,16 @@ Differences across conditions
 
 ```{r}
 m1 <- lmer(scale(EDA) ~ CL+Evaluation + (1|ID),
-           data=agg_EDA, REML=T)
+           data=aggEDA_df, REML=T)
 m2 <- lmer(scale(EDA) ~ CL+Evaluation + (CL+Evaluation|ID),
-           data=agg_EDA, REML=T)
+           data=aggEDA_df, REML=T)
 m3 <- lmer(scale(EDA) ~ CL*Evaluation + (CL+Evaluation|ID),
-           data=agg_EDA, REML=T)
+           data=aggEDA_df, REML=T)
 AIC(m1,m2,m3)
 BIC(m1,m2,m3)
 summary(m2)
 
-aov <- anova_test(data = agg_EDA, EDA ~ CL*Evaluation + Error(ID/(CL*Evaluation)), type =3,
+aov <- anova_test(data = aggEDA_df, EDA ~ CL*Evaluation + Error(ID/(CL*Evaluation)), type =3,
                   effect.size="pes")
 get_anova_table(aov)
 
@@ -423,7 +422,6 @@ ggplot(emm_eu, aes(x = Evaluation, y = Mean, group = CL, color = CL)) +
   labs(x = "Evaluation", y = "EDA", color = "CL") +
   theme_minimal()
 
-#ggsave("TablesFigures/EDA across conditions.jpeg",dpi=300,width = 4, height = 3)
 # greater effect in CL high group
 ```
 
@@ -431,10 +429,10 @@ EDA prediction of RT and Errors
 
 ```{r}
 m1 <- lmer(scale(RT_Raw) ~ scale(EDA) + (1|ID),
-           data=agg_EDA, REML=T)
+           data=aggEDA_df, REML=T)
 
 m2 <- lmer(scale(RT_Raw) ~ scale(EDA) + (EDA|ID),
-           data=agg_EDA, REML=T)
+           data=aggEDA_df, REML=T)
 AIC(m1,m2) #m1
 BIC(m1,m2) #m1
 
@@ -442,16 +440,16 @@ summary(m1) # The higher EDA, the faster RT
 
 
 m2 <- lmer(scale(RT_Raw) ~ CL+Evaluation + scale(EDA) + (1|ID),
-           data=agg_EDA, REML=T)
+           data=aggEDA_df, REML=T)
 
 m3 <- lmer(scale(RT_Raw) ~ CL+Evaluation + scale(EDA) + (CL+Evaluation|ID),
-           data=agg_EDA, REML=T)
+           data=aggEDA_df, REML=T)
 
 m4 <- lmer(scale(RT_Raw) ~ CL*Evaluation*scale(EDA) + (1|ID),
-           data=agg_EDA, REML=T)
+           data=aggEDA_df, REML=T)
 
 m5 <- lmer(scale(RT_Raw) ~ CL*Evaluation*scale(EDA) + (CL+Evaluation|ID),
-           data=agg_EDA, REML=T)
+           data=aggEDA_df, REML=T)
 
 AIC(m1,m2,m3,m4, m5)[order(AIC(m1,m2, m3, m4, m5)$AIC),] # prefers m3
 BIC(m1,m2,m3,m4, m5)[order(BIC(m1,m2, m3, m4, m5)$BIC),] # prefers m2
@@ -467,7 +465,7 @@ t_ <- model_parameters(m3)[1:4,1:9] %>% dplyr::select(-"CI")
 
 # Extract unstandardized Beta
 Beta_m <- lmer(scale(RT_Raw, scale=F) ~ CL+Evaluation + scale(EDA) + (CL+Evaluation|ID),
-               data=agg_EDA, REML=T)
+               data=aggEDA_df, REML=T)
 t_Beta <- model_parameters(Beta_m)[1:4,] %>% dplyr::select("Parameter", "Coefficient")
 colnames(t_Beta)[2] <- "Unstandardized B"
 table <- inner_join(t_Beta, t_, c="Parameter")
@@ -477,7 +475,7 @@ table <- nice_table(table,
                     note = c(
                       "* p < .05, ** p < .01, *** p < .001. CL = Cognitive Load; CI = Confidence Interval."
                     ))
-table
+#table
 
 save_as_docx(table, path = "TablesFigures/EDA RT LMM.docx")
 
@@ -487,10 +485,10 @@ save_as_docx(table, path = "TablesFigures/EDA RT LMM.docx")
 
 
 m1 <- lmer(scale(Errors) ~ scale(EDA) + (1|ID),
-           data=agg_EDA, REML=T)
+           data=aggEDA_df, REML=T)
 
 m2 <- lmer(scale(Errors) ~ scale(EDA) + (EDA|ID),
-           data=agg_EDA, REML=T)
+           data=aggEDA_df, REML=T)
 AIC(m1,m2) #m1
 BIC(m1,m2) #m1
 
@@ -498,16 +496,16 @@ summary(m1) # No effect
 
 
 m2 <- lmer(scale(Errors) ~ CL+Evaluation + scale(EDA) + (1|ID),
-           data=agg_EDA, REML=T)
+           data=aggEDA_df, REML=T)
 
 m3 <- lmer(scale(Errors) ~ CL+Evaluation + scale(EDA) + (CL+Evaluation|ID),
-           data=agg_EDA, REML=T)
+           data=aggEDA_df, REML=T)
 
 m4 <- lmer(scale(Errors) ~ CL*Evaluation*scale(EDA) + (1|ID),
-           data=agg_EDA, REML=T)
+           data=aggEDA_df, REML=T)
 
 m5 <- lmer(scale(Errors) ~ CL*Evaluation*scale(EDA) + (CL+Evaluation|ID),
-           data=agg_EDA, REML=T)
+           data=aggEDA_df, REML=T)
 
 AIC(m1,m2,m3,m4, m5)[order(AIC(m1,m2, m3, m4, m5)$AIC),] # prefers m3
 BIC(m1,m2,m3,m4, m5)[order(BIC(m1,m2, m3, m4, m5)$BIC),] # prefers m2
@@ -522,7 +520,7 @@ t_ <- model_parameters(m3)[1:4,1:9] %>% dplyr::select(-"CI")
 
 # Extract unstandardized Beta
 Beta_m <- lmer(scale(Errors, scale=F) ~ CL+Evaluation + scale(EDA) + (CL+Evaluation|ID),
-               data=agg_EDA, REML=T)
+               data=aggEDA_df, REML=T)
 t_Beta <- model_parameters(Beta_m)[1:4,] %>% dplyr::select("Parameter", "Coefficient")
 colnames(t_Beta)[2] <- "Unstandardized B"
 table <- inner_join(t_Beta, t_, c="Parameter")
@@ -532,7 +530,7 @@ table <- nice_table(table,
                     note = c(
                       "* p < .05, ** p < .01, *** p < .001. CL = Cognitive Load; CI = Confidence Interval."
                     ))
-table
+#table
 
 save_as_docx(table, path = "TablesFigures/EDA Errors LMM.docx")
 ```
@@ -541,25 +539,25 @@ EDA, Eustress and Distress
 
 ```{r}
 m1 <- lmer(scale(EDA) ~ scale(Eustress) + (1|ID),
-           data=agg_EDA, REML = T)
+           data=aggEDA_df, REML = T)
 m1a <- lmer(scale(EDA) ~ scale(Eustress) + (Eustress|ID),
-           data=agg_EDA, REML = T)
+           data=aggEDA_df, REML = T)
 AIC(m1,m1a)
 BIC(m1,m1a)
 summary(m1) # no correlation
 
 
 m1 <- lmer(scale(EDA) ~ scale(Distress) + (1|ID),
-           data=agg_EDA, REML = T)
+           data=aggEDA_df, REML = T)
 m1a <- lmer(scale(EDA) ~ scale(Distress) + (Distress|ID),
-            data=agg_EDA, REML = T)
+            data=aggEDA_df, REML = T)
 AIC(m1,m1a)
 BIC(m1,m1a)
 summary(m1) # no correlation
 
 
 m1 <- lmer(scale(EDA) ~ scale(Eustress)*scale(Distress) + (1|ID),
-           data=agg_EDA, REML = T)
+           data=aggEDA_df, REML = T)
 summary(m1) # no effect
 
 
@@ -568,9 +566,9 @@ summary(m1) # no effect
 
 ## EDA and Frustration
 m1 <- lmer(scale(EDA) ~ scale(Frustration) + (1|ID),
-           data=agg_EDA, REML = T)
+           data=aggEDA_df, REML = T)
 m1a <- lmer(scale(EDA) ~ scale(Frustration) + (Frustration|ID),
-            data=agg_EDA, REML = T)
+            data=aggEDA_df, REML = T)
 AIC(m1,m1a)
 BIC(m1,m1a)
 summary(m1) # no correlation
@@ -621,9 +619,6 @@ p <- ggplot(data = new_df, aes(x=diff_err, y=diff_rt)) +
 print(p)
 
 ggsave("TablesFigures/Figure 6 - Delta rt errors regression..jpeg",dpi=600, width = 6, height = 4)
-
-
-
 
 ```
 
@@ -718,27 +713,27 @@ sum(incl_list2back %in% incl_list3back) # N of participants who performed better
 Prepare data set
 
 ```{r}
-dominant_response_col <- ifelse((experiment_data$Target == 0 & experiment_data$Errors == 0) | 
-                                (experiment_data$Target == 1 & experiment_data$Errors == 1),
+dominant_response_col <- ifelse((all_trials_df$Target == 0 & all_trials_df$Errors == 0) | 
+                                (all_trials_df$Target == 1 & all_trials_df$Errors == 1),
                                 1,0)
-experiment_data$dominant_response <- dominant_response_col
-experiment_data <- experiment_data[, c(1,32, seq(2,ncol(experiment_data)-1))]
+all_trials_df$dominant_response <- dominant_response_col
+all_trials_df <- all_trials_df[, c(1,32, seq(2,ncol(all_trials_df)-1))]
 
 ```
 
 ```{r}
-levels(experiment_data$CL)
-levels(experiment_data$Evaluation)
-is.numeric(experiment_data$dominant_response)
-experiment_data$dominant_response <- factor(experiment_data$dominant_response, levels = c(0,1))
-levels(experiment_data$dominant_response)
+levels(all_trials_df$CL)
+levels(all_trials_df$Evaluation)
+is.numeric(all_trials_df$dominant_response)
+all_trials_df$dominant_response <- factor(all_trials_df$dominant_response, levels = c(0,1))
+levels(all_trials_df$dominant_response)
 ```
 
 GLMM for dominant response
 
 ```{r}
 m1 <- glmer(dominant_response ~ Evaluation*CL + (1|ID),
-            data = experiment_data,
+            data = all_trials_df,
             family = binomial)
 summary(m1)
 dominant_repsonse_results <- parameters(m1)
@@ -755,7 +750,7 @@ between groups that performed better under social evaluation versus performed wo
 Chi2 for dominant responses
 
 ```{r}
-tab <- table(experiment_data$dominant_response,experiment_data$Evaluation)
+tab <- table(all_trials_df$dominant_response,all_trials_df$Evaluation)
 colnames(tab) <- c("control","evaluation")
 print(tab)
 
@@ -778,16 +773,6 @@ chi_test <- mcnemar_test(xtab)
 # View the results
 print(chi_test)
 ```
-
-```{r}
-
-
-
-
-
-```
-
-
 
 
 ## Version infomation

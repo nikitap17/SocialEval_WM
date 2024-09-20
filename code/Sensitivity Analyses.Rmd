@@ -18,24 +18,24 @@ options(es.use_symbols = TRUE)
 ### Data Preparation
 
 ```{r}
-main_df <- read_csv("Data/clean_data/main_df.csv", show_col_types = FALSE)
+main_df <- read_csv("../Data/clean_data/main_df.csv", show_col_types = FALSE)
 main_df$ID <- factor(main_df$ID)
 main_df$Evaluation <- factor(main_df$Evaluation)
 main_df$CL <- factor(main_df$CL, levels = c("low","high"))
 main_df$block <- factor(main_df$block)
 main_df$trial_block <- factor(main_df$trial_block)
 
-agg_df <- read_csv("Data/clean_data/agg_df.csv", show_col_types = FALSE)
+agg_df <- read_csv("../Data/clean_data/agg_df.csv", show_col_types = FALSE)
 agg_df$ID <- factor(agg_df$ID)
 agg_df$Evaluation <- factor(agg_df$Evaluation)
 agg_df$CL <- factor(agg_df$CL, levels = c("low","high"))
 
-experiment_data <- read_csv("Data/clean_data/experiment_data.csv", show_col_types = FALSE)
-experiment_data$ID <- factor(experiment_data$ID)
-experiment_data$Evaluation <- factor(experiment_data$Evaluation)
-experiment_data$CL <- factor(experiment_data$CL, levels = c("low","high"))
-experiment_data$block <- factor(experiment_data$block)
-experiment_data$trial_block <- factor(experiment_data$trial_block)
+all_trials_df <- read_csv("../Data/clean_data/all_trials_df.csv", show_col_types = FALSE)
+all_trials_df$ID <- factor(all_trials_df$ID)
+all_trials_df$Evaluation <- factor(all_trials_df$Evaluation)
+all_trials_df$CL <- factor(all_trials_df$CL, levels = c("low","high"))
+all_trials_df$block <- factor(all_trials_df$block)
+all_trials_df$trial_block <- factor(all_trials_df$trial_block)
 ```
 
 # Sensitivity Analyses
@@ -45,10 +45,10 @@ experiment_data$trial_block <- factor(experiment_data$trial_block)
 a)  Excluding outliers
 
 ```{r}
-outliers_rt <- read_csv("Data/clean_data/Outliers_RT.csv", show_col_types = FALSE)
+outliers_rt <- read_csv("../Data/clean_data/Outliers_RT.csv", show_col_types = FALSE)
 outliers_rt <- sapply(outliers_rt$ID,as.character)
 
-outliers_errors <- read_csv("Data/clean_data/Outliers_errors.csv", show_col_types = FALSE)
+outliers_errors <- read_csv("../Data/clean_data/Outliers_errors.csv", show_col_types = FALSE)
 outliers_errors<- sapply(outliers_errors$ID,as.character)
 ```
 
@@ -122,10 +122,10 @@ No differences in direction of the effect
 ### Excluding outliers
 
 ```{r}
-experiment_data1 <- subset(experiment_data,!(ID %in% outliers_errors))
+all_trials_df1 <- subset(all_trials_df,!(ID %in% outliers_errors))
 
 m4 <- glmer(Errors ~ block + trial_block + CL + Evaluation + (1|ID),
-           data=experiment_data1, family = binomial)
+           data=all_trials_df1, family = binomial)
 summary(m4)
 ```
 
@@ -134,10 +134,10 @@ No differences in direction of the effect
 ### Exclude males
 
 ```{r}
-experiment_data1 <- subset(experiment_data,!(ID %in% excl_males))
+all_trials_df1 <- subset(all_trials_df,!(ID %in% excl_males))
 
 m4 <- glmer(Errors ~ block + trial_block + CL + Evaluation + (1|ID),
-            data=experiment_data1, family = binomial)
+            data=all_trials_df1, family = binomial)
 summary(m4)
 ```
 
@@ -146,10 +146,10 @@ No differences in direction of the effect
 ### Excluding participants who failed the manipulation check
 
 ```{r}
-experiment_data1 <- subset(experiment_data,!(ID %in% excl_mcheck))
+all_trials_df1 <- subset(all_trials_df,!(ID %in% excl_mcheck))
 
 m4 <- glmer(Errors ~ block + trial_block + CL + Evaluation + (1|ID),
-            data=experiment_data1, family = binomial)
+            data=all_trials_df1, family = binomial)
 summary(m4)
 ```
 
