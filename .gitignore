@@ -16,8 +16,6 @@ __pycache__/
 
 .spyproject/config/
 
-# Data folder
-Data/
 
-Redundant Scripts
+# Redundant Scripts
 old_scripts/
