@@ -1,2 +1,2 @@
 # SocialEval_WM
- Online repository for this paper (*work in progress*).
+ Online repository for this paper (*link available once the paper is published*).
