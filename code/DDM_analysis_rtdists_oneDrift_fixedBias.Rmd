@@ -1,4 +1,5 @@
 ```{r}
+renv::restore()
 options(digits = 3) # by default, print results to three decimal digits
 
 library(tidyverse)
@@ -36,16 +37,88 @@ all_trials_df$block <- factor(all_trials_df$block)
 all_trials_df$trial_block <- factor(all_trials_df$trial_block)
 ```
 
+## Check 1: Difference in RT between correct and incorrect trials
+
+```{r}
+model <- lmer(RT_Raw ~ Errors*Evaluation*CL + (1|ID), data = all_trials_df, REML = T)
+summary(model) # no sign. interactions
+paste("BIC interaction: ", BIC(model))
+
+model <- lmer(RT_Raw ~ Errors+Evaluation+CL + (1|ID), data = all_trials_df, REML = T)
+summary(model) # no sign. interactions
+paste("BIC additive: ", BIC(model))
+```
+
+**Significant differences in RT between conditions and correct/incorrect trials -> model two different drift rates in DDM?**
+
+## Check 2: Is there a bias towards either response (0,1 - target-non-target)?
+
+```{r}
+## Prepare non-target vs. target response variable
+target_response <- (ifelse((all_trials_df$Target == 0 & all_trials_df$Errors == 0) | 
+                                (all_trials_df$Target == 1 & all_trials_df$Errors == 1),
+                                0,1))
+all_trials_df$target_response <- target_response
+all_trials_df <- all_trials_df[, c(1,ncol(all_trials_df), seq(2,ncol(all_trials_df)-1))]
+
+## More errors for target trials? (bias towards non-target)
+model <- glmer(Errors ~ Target + (1|ID), data = all_trials_df, family = binomial)
+summary(model)
+
+# differs bw conditions
+model <- glmer(Errors ~ Target*Evaluation + Target*CL + (1|ID), data = all_trials_df, family = binomial)
+summary(model)
+# ->>no difference between conditions
+
+## mcnemar test - target indications below chance?
+tab <- table(all_trials_df$target_response,all_trials_df$Target)
+colnames(tab) <- c("NonTarget","Target")
+print(tab)
+
+cntrl.0_eval.0 <- min(c(tab["0","NonTarget"],tab["0","Target"]))
+cntrl.0_eval.1 <- abs(tab["0","NonTarget"] - tab["0","Target"])
+cntrl.1_eval.0 <- abs(tab["1","NonTarget"] - tab["1","Target"])
+cntrl.1_eval.1 <- min(c(tab["1","NonTarget"],tab["1","Target"]))
+
+xtab <- as.table(
+  rbind(c(cntrl.0_eval.0, cntrl.0_eval.1), c(cntrl.1_eval.0,cntrl.1_eval.1))
+)
+dimnames(xtab) <- list(
+  NonTarget = c("0", "1"),
+  Target = c("0", "1")
+)
+print(xtab)
+# Perform the chi-square test
+mcnemar_result <- mcnemar_test(xtab)
+
+# View the results
+print(mcnemar_result)
+
+## direction?
+nontarget_correct <- tab["0","NonTarget"] / sum(tab["0",])
+target_correct <- tab["1","Target"] / sum(tab["1",])
+bias <- target_correct / (target_correct + nontarget_correct)
+
+# bias favours non-target responses, however, only very marginal. can be ignored for DDM?
+```
+
+
+
+# DDM and recovery study for all participants
+
 ### Define LL optimisation function
 
 ```{r}
-ll_diffusion <- function(pars, datlist){
+DRIFT_BIAS <- 0.5
+
+ll_diffusion <- function(pars, datlist) {
   
-  a <- pars[1]
-  t0 <- pars[2]
-  v1 <- pars[3]
-  v2 <- pars[4]
-  z <- pars[5] * a  # Fixed bias at midpoint
+  a <- pars["a"]
+  t0 <- pars["t0"]
+  v1 <- pars["v1"]
+  z <- DRIFT_BIAS * a
+  
+  v2 <- -v1  # fixed symmetric inversion
 
   loss <- 0
   loss <- loss - sum(log(ddiffusion(datlist[[1]], a = a, v = v1, t0 = t0, z = z)))
@@ -53,9 +126,10 @@ ll_diffusion <- function(pars, datlist){
 
   return(loss)  # Negative log-likelihood
 }
+
+
 ```
 
-# DDM and recovery study for all participants
 
 ### Prepare data and initialise a model with 5 parameters
 
@@ -84,10 +158,10 @@ ID_list <- unique(subset(ddm.df, !(ID %in% c("40122", "511327", "765713")))[,"ID
 #ID_list <- unique(ddm.df$ID)
 conditions = unique(ddm.df$CL_Eval)
 
-p_ddm5 <- c(a = 1, t0 = 0.1, v1 = 0, v2 = 0, z = 0.5) # starting values with two drift rates
+p_ddm <- c(a = 1, t0 = 0.1, v1 = 0) # starting values with two drift rates
 
 n_conditions <- length(conditions)
-n_parameters <- length(p_ddm5)
+n_parameters <- length(p_ddm) + 2 # for v2, z
 
 ddm_list <- list()
 
@@ -113,7 +187,7 @@ for (participant in ID_list){   # loop through each participant
     data1.s2 = subset(df, cond==1)
     data1.both = list(data1.s1, data1.s2)
   
-    results <- optim(par=p_ddm5, f=ll_diffusion, dat=data1.both, method="Nelder-Mead", control = c(maxit = 2000))
+    results <- optim(par=p_ddm, f=ll_diffusion, dat=data1.both, method="Nelder-Mead", control = c(maxit = 2000))
     
     parms <- results$par
     DDM5[i, "ID"] <- participant
@@ -125,8 +199,8 @@ for (participant in ID_list){   # loop through each participant
     DDM5[i,"a"] <- parms["a"]
     DDM5[i,"t0"] <- parms["t0"]
     DDM5[i,"v1"] <- parms["v1"]
-    DDM5[i,"v2"] <- parms["v2"]
-    DDM5[i, "z"] <- parms["z"] / parms["a"]
+    DDM5[i,"v2"] <- -parms["v1"]
+    DDM5[i, "z"] <- DRIFT_BIAS
     DDM5[i, "converge"] <- results$convergence
     DDM5[i,"-LLE"] <- results$value
     DDM5[i, "AIC"] <- 2*n_parameters - 2*-1*results$value
@@ -151,7 +225,7 @@ for (participant in ID_list){   # loop through each participant
     parm_recov_s1 <- cbind(rdiffusion(n=DDM5[i,"Ns1"],
                                    a=DDM5$a[i],
                                    t0=DDM5$t0[i],
-                                   z=DDM5$z[i] * DDM5$a[i],
+                                   z=DDM5$z[i] * DDM5$a[i], # z = bias * a
                                    v=DDM5$v1[i]), cond=0)
     parm_recov_s2 <- cbind(rdiffusion(n=DDM5[i,"Ns2"],
                                    a=DDM5$a[i],
@@ -163,7 +237,7 @@ for (participant in ID_list){   # loop through each participant
     parm_recov.both <- list(subset(parm_recov, cond==0), subset(parm_recov, cond==1))
     
     
-    sim <- optim(par=p_ddm5, f=ll_diffusion, dat=parm_recov.both, method="Nelder-Mead", control = c(maxit = 2000))
+    sim <- optim(par=p_ddm, f=ll_diffusion, dat=parm_recov.both, method="Nelder-Mead", control = c(maxit = 2000))
     
     parms <- sim$par
     DDM5[i,"p.acc"] <- (table(parm_recov$cond, parm_recov$resp)[2,2] + table(parm_recov$cond, parm_recov$resp)[1,1]) / nrow(parm_recov)
@@ -171,8 +245,8 @@ for (participant in ID_list){   # loop through each participant
     DDM5[i,"p.a"] <- parms["a"]
     DDM5[i,"p.t0"] <- parms["t0"]
     DDM5[i,"p.v1"] <- parms["v1"]
-    DDM5[i,"p.v2"] <- parms["v2"]
-    DDM5[i, "p.z"] <- parms["z"] / parms["a"]
+    DDM5[i,"p.v2"] <- -parms["v1"]
+    DDM5[i, "p.z"] <- DRIFT_BIAS
     DDM5[i, "p.converge"] <- sim$convergence
   
   }
@@ -198,23 +272,23 @@ write_csv(rtdist_df, "../Data/clean_data/ddm_df.csv")
 
 ```{r}
 recov_cor <- data.frame(
-  parameter = c("acc", "M.rt", "a", "t0", "v1", "v2", "z"),
+  parameter = c("acc", "M.rt", "a", "t0", "v1", "v2"),
   corr = c(cor(rtdist_df$acc, rtdist_df$p.acc),   
            cor(rtdist_df$M_rt, rtdist_df$p.M_rt),
            cor(rtdist_df$a, rtdist_df$p.a),   # boundary / speed-acc trade-off
            cor(rtdist_df$t0, rtdist_df$p.t0),   # non-decision time
            cor(rtdist_df$v1, rtdist_df$p.v1),   # drift rate response non-target 0
-           cor(rtdist_df$v2, rtdist_df$p.v2),   # drift rate response target 1
-           cor(rtdist_df$z, rtdist_df$p.z)   # bias
+           cor(rtdist_df$v2, rtdist_df$p.v2)   # drift rate response target 1
+           #cor(rtdist_df$z, rtdist_df$p.z)
   )
 )
 
 table <- nice_table(recov_cor, 
                     title = c("Table S4", "Recovery Study for Estimated DDM Parameters"),
                     note = c(
-                      "DDM = drift diffusion model; r > .75 is considered good, r > .95 is considered excellent."
+                      "DDM = drift diffusion model; r > .75 is considered good, r > .95 is consideered excellent."
                     ))
-recov_cor
+print(recov_cor)
 
 save_as_docx(table, path = "TablesFigures/Table S4 - DDM recov study.docx")
 ```
@@ -224,15 +298,7 @@ save_as_docx(table, path = "TablesFigures/Table S4 - DDM recov study.docx")
 # Group level analyses
 
 ```{r}
-mean_bias = rtdist_df %>%
-  group_by(condition) %>%
-  summarise(mean = mean(z))
-mean_bias
-```
-
-
-```{r}
-#rtdist_df <- read_csv("../Data/clean_data/ddm_df.csv", show_col_types = FALSE)
+rtdist_df <- read_csv("../Data/clean_data/ddm_df.csv", show_col_types = FALSE)
 ```
 
 
@@ -258,7 +324,7 @@ AIC(m3)-AIC(m2)
 BIC(m3)-BIC(m2)
 
 # unstandardized
-model_parameters(m3)
+model_parameters(m2)
 
 
 
@@ -307,6 +373,7 @@ plot_a <- ggplot(emm, aes(x = Eval, y = Mean, group = factor(CL), color=factor(C
 
 ```
 
+No differences in speed-accuracy trade-off
 
 ## Bias
 
