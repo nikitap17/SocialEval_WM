@@ -1,4 +1,6 @@
 ```{r}
+renv::restore()
+
 library(car)
 library(readr)
 library(ggpubr)

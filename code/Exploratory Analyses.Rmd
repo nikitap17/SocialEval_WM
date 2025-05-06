@@ -1,6 +1,7 @@
 **Import libraries using a reproducible approach**
 
 ```{r}
+renv::restore()
 pkgs <- c("tidyverse",
           "ggpubr",
           "lme4",
@@ -14,7 +15,9 @@ pkgs <- c("tidyverse",
           "effectsize",
           "flextable",
           "parameters",
-          "sjstats")
+          "sjstats",
+          "zoo",
+          "patchwork")
 
 lapply(pkgs, library, character.only=TRUE)
 
@@ -59,7 +62,128 @@ aggEDA_df$CL <- factor(aggEDA_df$CL,levels = c("low","high"))
 
 # Exploratory Analyses
 
-### RT and Errors
+### 1. Performance effects of CL and social evaluation controlled fro perceived mental demand
+
+```{r}
+rt_mod <- lmer(RT_Raw ~ CL + Evaluation + block + trial_block + Mental + (1|ID),
+               data=main_df, REML = T)
+summary(rt_mod)
+
+er_mod <- glmer(Errors ~ CL + Evaluation + block + trial_block + Mental + (1|ID),
+               data=all_trials_df, family = binomial)
+summary(er_mod)
+```
+
+### 2. Identify learning effects in control conditions
+
+#### Moving average
+```{r}
+# Filter to control condition only
+control_data <- all_trials_df %>% filter(Evaluation == 0)
+control_data$Trial <- ifelse(control_data$block == 1, control_data$Trial, control_data$Trial + 30)
+
+# Rolling average per participant (adjust window size as needed)
+control_smoothed <- control_data %>%
+  arrange(ID, Trial, block) %>%
+  #group_by(ID,CL) %>%
+  group_by(ID,CL,block) %>%
+  summarise(
+    RT_ma = zoo::rollmean(RT_Raw, k = 5, fill = NA, align = "right"),
+    er_ma = zoo::rollmean(Errors, k = 5, fill = NA, align = "right")) %>%
+  ungroup() %>%
+  mutate(Trial = control_data$Trial - 2)
+control_smoothed <- na.omit(control_smoothed)
+
+```
+
+```{r}
+## Prepare data
+agg_control <- control_smoothed %>%
+  group_by(CL, Trial) %>%
+  summarise(
+    mean_RT = mean(RT_ma, na.rm = TRUE) * 1000,
+    sd_RT = sd(RT_ma, na.rm = TRUE) * 1000,
+    n = n(),  # total number of trials (can replace with n_distinct(participant) if needed)
+    se_RT = sd_RT / sqrt(n),
+    ci_95_RT = se_RT * 1.96,
+    
+    mean_er = mean(er_ma, na.rm = TRUE),
+    sd_er = sd(er_ma, na.rm = TRUE),
+    se_er = sd_er / sqrt(n),
+    ci_95_er = se_er * 1.96,
+  ) %>%
+  ungroup()
+
+
+## Reaction Time
+plot1 <- ggplot(agg_control, aes(x = Trial, y = mean_RT, color = CL, fill = CL)) +
+  geom_line(size = 0.5) +
+  geom_point(aes(shape = CL),size = 1) +
+  geom_ribbon(data = agg_control,
+              aes(ymin = mean_RT - ci_95_RT, ymax = mean_RT + ci_95_RT, fill = CL),
+              alpha = 0.3, inherit.aes = TRUE, color = NA) +
+  labs(x = "Trial Number", y = "Reaction Time (ms)",
+       color = "Cognitive Load", shape = "Cognitive Load",
+       linetype = "Cognitive Load", fill = "Cognitive Load") +
+  scale_shape_manual(values = c(15, 19), labels = c("Low", "High")) +
+  scale_color_manual(values = c(c1_low, c2_high), labels = c("Low", "High")) +
+  #scale_linetype_manual(values = c(1, 2), labels = c("Low", "High")) +
+  scale_fill_manual(values = c(c1_low, c2_high), labels = c("Low", "High")) +
+  scale_x_continuous(breaks = seq(0, 61, by = 10)) +
+  theme_classic() +
+  theme(legend.text = element_text(size = 8),
+        axis.title.x = element_text(vjust = -3),
+        axis.title.y = element_text(vjust = 3),
+        plot.margin = margin(b = 15, l = 15))
+
+
+## Errors
+plot2 <- ggplot(agg_control, aes(x = Trial, y = mean_er, color = CL, fill = CL)) +
+  geom_line(size = 0.5) +
+  geom_point(aes(shape = CL), size = 1) +
+  geom_ribbon(data = agg_control,
+              aes(ymin = mean_er - ci_95_er, ymax = mean_er + ci_95_er, fill = CL),
+              alpha = 0.3, inherit.aes = TRUE, color = NA) +
+  labs(x = "Trial Number", y = "Error Rate",
+       color = "Cognitive Load", shape = "Cognitive Load",
+       linetype = "Cognitive Load", fill = "Cognitive Load") +
+  scale_shape_manual(values = c(15, 19), labels = c("Low", "High")) +
+  scale_color_manual(values = c(c1_low, c2_high), labels = c("Low", "High")) +
+  #scale_linetype_manual(values = c(1, 2), labels = c("Low", "High")) +
+  scale_fill_manual(values = c(c1_low, c2_high), labels = c("Low", "High")) +
+  scale_x_continuous(breaks = seq(0, 61, by = 10)) +
+  theme_classic() +
+  theme(legend.text = element_text(size = 8),
+        axis.title.x = element_text(vjust = -3),
+        axis.title.y = element_text(vjust = 3),
+        plot.margin = margin(b = 15, l = 15))
+
+
+## Combine plots
+combined_plot <- (plot1 | plot2) +
+  plot_annotation(tag_levels = 'A', title = "Control") +
+  plot_layout(guides = "collect") &
+  theme(plot.tag = element_text(face = "bold"),
+        legend.position='bottom',
+        plot.title = element_text(hjust = 0.5))
+
+print(combined_plot)
+ggsave("TablesFigures/Exploratory/rolling_means_control.jpeg", dpi = 600, width = 7, height = 4.5)
+
+```
+
+
+```{r}
+model <- lmer(scale(RT_Raw) ~ scale(Trial)*block*Evaluation + (1 | ID), data = all_trials_df, REML = T)
+summary(model)
+
+model <- glmer(Errors ~ scale(Trial)*block*Evaluation + (1 | ID), data = all_trials_df,
+               family = binomial)
+summary(model)
+```
+
+
+### 2. Relationship between RT/Errors control and RT/Errors evaluation
 
 ```{r}
 df_perceived <- agg_df[,c("ID","CL","Evaluation","RT_Raw","Errors")]
@@ -70,7 +194,7 @@ wide_df <- pivot_wider(df_perceived, id_cols = c(ID,CL), names_from = Evaluation
 wide_df <- subset(wide_df, is.na(RT_Raw_0) == F & is.na(RT_Raw_1) == F)
 ```
 
-Reaction Time
+1.1 Reaction Time
 
 ```{r}
 lm.rt <- lm(scale(RT_Raw_1) ~ scale(RT_Raw_0), data=wide_df)
@@ -96,7 +220,7 @@ ggplot(wide_df, aes(x = RT_Raw_0, y = RT_Raw_1)) +
   theme_classic()
 ```
 
-Errors
+1.2 Errors
 
 ```{r}
 lm.er <- lm(scale(Errors_1) ~ scale(Errors_0), data=wide_df)
@@ -240,7 +364,7 @@ ggplot(emm_eu, aes(x = Evaluation, y = Mean, group = CL, shape= CL, color = CL,
 
 ```
 
-### Perceived Performance
+### 3. Perceived Performance
 
 ```{r}
 ## Reaction Time
@@ -315,7 +439,7 @@ model_parameters(perform.rt.m)
 model_parameters(perform.rt.m.uns)
 ```
 
-### Mental Demand
+### 4. Mental Demand
 
 ```{r}
 type3 <- list(CL = contr.sum, Evaluation = contr.sum)
@@ -354,7 +478,7 @@ ggplot(emm, aes(x = Evaluation, y = Mean, group = CL, color=CL,shape=CL, linetyp
 # greater effect in CL high group
 ```
 
-### Temporal Demand
+### 5. Temporal Demand
 
 ```{r}
 temp.m <- lmer(Temporal ~ CL*Evaluation + (CL+Evaluation|ID),
@@ -392,7 +516,7 @@ ggplot(emm, aes(x = Evaluation, y = Mean, group = CL, color=CL,shape=CL, linetyp
 
 ```
 
-### EDA
+### 6. EDA
 
 Differences across conditions
 
@@ -574,9 +698,10 @@ BIC(m1,m1a)
 summary(m1) # no correlation
 ```
 
-### Speed-Accuracy trade-off
+### 7. Speed-Accuracy trade-off
 
 **Prepare data set**
+
 ```{r}
 control_df <- agg_df[c("ID", "CL", "Evaluation", "RT_Raw", "Errors")] %>% filter(Evaluation==0)
 stress_df <- agg_df[c("ID", "CL", "Evaluation", "RT_Raw", "Errors")] %>% filter(Evaluation==1)
@@ -622,7 +747,6 @@ ggsave("TablesFigures/Figure 6 - Delta rt errors regression..jpeg",dpi=600, widt
 
 ```
 
-
 ```{r}
 lmm <- lmer(diff_rt ~ diff_err + CL + (1|ID), data = new_df, REML = T)
 lmm.int <- lmer(diff_rt ~ diff_err*CL + (1|ID), data = new_df, REML = T)
@@ -651,62 +775,7 @@ effectsize(lmm)
 estimate_means(lmm, ~improvement)
 ```
 
-
-
-#### a) Participants who performed better under social evaluation
-
-```{r}
-## Participants who performed better under evaluation in
-## a) the low CL condition
-incl_list2back <- unique(new_df$ID[new_df$CL == "low" & new_df$diff_err < 0])
-# b) the high CL condition
-incl_list3back <- unique(new_df$ID[new_df$CL == "high" & new_df$diff_err < 0])
-
-paste("N of participants who performed better in both low and high CL:", sum(incl_list2back %in% incl_list3back))
-
-analys_df_2back <- subset(agg_df, CL == "low" & ID %in% incl_list2back)
-analys_df_3back <- subset(agg_df, CL == "high" & ID %in% incl_list3back)
-analys_df <- rbind(analys_df_2back,analys_df_3back)
-
-## LMM
-# m_better <- lmer(RT_Raw ~ CL+Evaluation + (1|ID), data =analys_df, REML = T)  
-# summary(m_better)
-# effectsize(m_better)
-# 
-# cor.test(analys_df$RT_Raw, analys_df$Errors, alternative = "t")
-
-```
-
-
-#### b) Participants who performed worse under social evaluation
-
-```{r}
-## Participants who performed worse in
-## a) the low CL condition
-incl_list2back <- unique(new_df$ID[new_df$CL == "low" & new_df$diff_err > 0])
-## b) the high CL condition
-incl_list3back <- unique(new_df$ID[new_df$CL == "high" & new_df$diff_err > 0])
-
-sum(incl_list2back %in% incl_list3back) # N of participants that performed worse in both low and high CL
-
-analys_df_2back <- subset(agg_df, CL == "low" & ID %in% incl_list2back)
-analys_df_3back <- subset(agg_df, CL == "high" & ID %in% incl_list3back)
-analys_df <- rbind(analys_df_2back,analys_df_3back)
-
-## LMM
-m_worse <- lmer(RT_Raw ~ CL+Evaluation + (CL|ID), data =analys_df, REML = T)  
-summary(m_worse)
-effectsize(m_worse)
-```
-
-```{r}
-incl_list2back <- unique(new_df$ID[new_df$CL == "low" & new_df$diff_err < 0])
-incl_list3back <- unique(new_df$ID[new_df$CL == "high" & new_df$diff_err > 0])
-
-sum(incl_list2back %in% incl_list3back) # N of participants who performed better in low CL and worse in high CL (as hypothesised)
-```
-
-### Adversarial Testing: Generalized Drive Theory
+### 8. Adversarial Testing: Generalized Drive Theory
 
 *This theory assumes that dominant responses are enhanced by exposure to social presence. The predominant response in the n-back tasks is indicating a non-target, as 66% of all trials are non-targets. Accordingly, we should witness an increase in non-target responses.*
 
@@ -744,9 +813,6 @@ dominant_repsonse_results <- dominant_repsonse_results[c(1,2,3,5,6,9,12,13,14)]
 dominant_repsonse_results
 ```
 
-### Comparison of blood pressure
-between groups that performed better under social evaluation versus performed worse
-
 Chi2 for dominant responses
 
 ```{r}
@@ -773,7 +839,6 @@ chi_test <- mcnemar_test(xtab)
 # View the results
 print(chi_test)
 ```
-
 
 ## Version infomation
 

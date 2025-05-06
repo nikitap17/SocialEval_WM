@@ -1,6 +1,7 @@
 **Import libraries using a reproducible approach**
 
 ```{r}
+renv::restore()
 pkgs <- c("tidyverse",
           "ggpubr",
           "lme4",
