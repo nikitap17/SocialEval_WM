@@ -30,7 +30,7 @@ c2_high = C_pallette[2]
 c3 = C_pallette[3]
 ```
 
-### Data Preparation
+# Data Preparation
 
 ```{r}
 main_df <- read_csv("../Data/clean_data/main_df.csv", show_col_types = FALSE)
@@ -122,38 +122,12 @@ epsilon_aov3 <- epsilon_squared(aov3, partial=T, alternative = "two.sided")
 
 ### Linear Mixed Models
 
-Selecting the model
-
-```{r}
-m1 <- lmer(scale(RT_Raw) ~ CL*Evaluation + (1|ID),
-           data=main_df, REML = T)
-
-m1a <- lmer(scale(RT_Raw) ~ CL*Evaluation + (1|ID) + (0 + CL|ID),
-            data=main_df, REML = T)
-
-m1b <- lmer(scale(RT_Raw) ~ CL*Evaluation + (1|ID) + (0 + Evaluation|ID),
-            data=main_df, REML = T)
-
-m1c <- lmer(scale(RT_Raw) ~ CL*Evaluation + (1|ID) + (0 + CL+Evaluation|ID),
-            data=main_df, REML = T)
-
-m1d <- lmer(scale(RT_Raw) ~ CL*Evaluation + (CL+Evaluation|ID),
-           data=main_df, REML = T)
-
-m1e <- lmer(scale(RT_Raw) ~ CL*Evaluation + (CL*Evaluation|ID),
-           data=main_df, REML = T)
-
-AIC(m1,m1a,m1b, m1c, m1d, m1e)[order(AIC(m1,m1a,m1b, m1c, m1d, m1e)[,"AIC"]),] # prefers m1e
-BIC(m1,m1a,m1b, m1c, m1d, m1e)[order(BIC(m1,m1a,m1b, m1c, m1d, m1e)[,"BIC"]),] # prefers m1d
-print("We will continue with the less complex model m1d")
-```
-
 Interaction vs. no interaction model
 
 ```{r}
-m1a <- lmer(scale(RT_Raw) ~ CL+Evaluation + (CL+Evaluation|ID),
+m1a <- lmer(scale(RT_Raw) ~ CL+Evaluation + (1|ID),
             data=main_df, REML = T)
-m1b <- lmer(scale(RT_Raw) ~ CL*Evaluation + (CL+Evaluation|ID),
+m1b <- lmer(scale(RT_Raw) ~ CL*Evaluation + (1|ID),
             data=main_df, REML = T)
 AIC(m1a)-AIC(m1b)
 BIC(m1a)-BIC(m1b)
@@ -166,21 +140,20 @@ Compare different configurations of block And Timing block
 ```{r}
 m1a <- lmer(scale(RT_Raw) ~ CL+Evaluation + (1|ID),
            data=main_df, REML = T)
-m1b <- lmer(scale(RT_Raw) ~ CL+Evaluation + (CL+Evaluation|ID),
+
+m1c <- lmer(scale(RT_Raw) ~ CL*Evaluation + (1|ID),
            data=main_df, REML = T)
-m1c <- lmer(scale(RT_Raw) ~ CL*Evaluation + (CL+Evaluation|ID),
+m2 <- lmer(scale(RT_Raw) ~ block + CL+Evaluation + (1|ID),
            data=main_df, REML = T)
-m2 <- lmer(scale(RT_Raw) ~ block + CL+Evaluation + (CL+Evaluation|ID),
+m3 <- lmer(scale(RT_Raw) ~ trial_block + CL+Evaluation + (1|ID),
            data=main_df, REML = T)
-m3 <- lmer(scale(RT_Raw) ~ trial_block + CL+Evaluation + (CL+Evaluation|ID),
+m4 <- lmer(scale(RT_Raw) ~ block + trial_block + CL+Evaluation + (1|ID),
            data=main_df, REML = T)
-m4 <- lmer(scale(RT_Raw) ~ block + trial_block + CL+Evaluation + (CL+Evaluation|ID),
-           data=main_df, REML = T)
-m4a <- lmer(scale(RT_Raw) ~ block + trial_block + CL*Evaluation + (CL+Evaluation|ID),
+m4a <- lmer(scale(RT_Raw) ~ block + trial_block + CL*Evaluation + (1|ID),
            data=main_df, REML = T)
 
-AIC(m1a,m1b,m1c,m2,m3,m4,m4a)[order(AIC(m1a,m1b,m1c,m2,m3,m4,m4a)[,"AIC"]),]
-BIC(m1a,m1b,m1c,m2,m3,m4,m4a)[order(BIC(m1a,m1b,m1c,m2,m3,m4,m4a)[,"BIC"]),]
+AIC(m1a,m1c,m2,m3,m4,m4a)[order(AIC(m1a,m1c,m2,m3,m4,m4a)[,"AIC"]),]
+BIC(m1a,m1c,m2,m3,m4,m4a)[order(BIC(m1a,m1c,m2,m3,m4,m4a)[,"BIC"]),]
 
 RT_mod <- m4 # m4 preferred
 AIC(RT_mod)-AIC(RT_mod_simple)
@@ -193,12 +166,12 @@ Get table for model comparisons
 ```{r}
 model_equ <- c(
   "RT ~ CL + SEval + (1|ID)",
-  "RT ~ CL + SEval + (CL + SEval|ID)",
-  "RT ~ CL * SEval + (CL + SEval|ID)",
-  "RT ~ condition_block + CL + SEval + (CL + SEval|ID)",
-  "RT ~ trial_block + CL + SEval + (CL + SEval|ID)",
-  "RT ~ condition_block + trial_block + CL + SEval + (CL + SEval|ID)",
-  "RT ~ condition_block + trial_block + CL * SEval + (CL + SEval|ID)"
+  "RT ~ CL + SEval + (1|ID)",
+  "RT ~ CL * SEval + (1|ID)",
+  "RT ~ condition_block + CL + SEval + (1|ID)",
+  "RT ~ trial_block + CL + SEval + (1|ID)",
+  "RT ~ condition_block + trial_block + CL + SEval + (1|ID)",
+  "RT ~ condition_block + trial_block + CL * SEval + (1|ID)"
 )
 
 model_cmpr <- data.frame(
@@ -513,29 +486,11 @@ ggsave("TablesFigures/Figure 5AB - BF Analysis.jpeg", dpi = 600, width = 7, heig
 
 ### Generalized Linear Mixed Model with binomial distribution (logistic regression)
 
-Model Selection
-
-```{r}
-m1 <- glmer(Errors ~ CL*Evaluation + (1|ID),
-           data=all_trials_df, family = binomial)
-
-m2 <- glmer(Errors ~ CL*Evaluation + (CL+Evaluation|ID),
-            data=all_trials_df, family = binomial)
-
-paste("AIC: ",AIC(m1)-AIC(m2))
-paste("BIC: ",BIC(m1)-BIC(m2))
-```
-
-```{r}
-cat("Continue with less complex random structure\n\n")
-
-summary(m1)
-model_parameters(m1)[4,]
-```
-
 Compare interaction and no interaction models
 
 ```{r}
+m1 <- glmer(Errors ~ CL*Evaluation + (1|ID),
+             data=all_trials_df, family = binomial)
 m1a <- glmer(Errors ~ CL+Evaluation + (1|ID),
              data=all_trials_df, family = binomial)
 AIC(m1a)-AIC(m1)

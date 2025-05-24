@@ -16,7 +16,7 @@ lapply(pkgs, library, character.only=TRUE)
 options(es.use_symbols = TRUE)
 ```
 
-### Data Preparation
+# Data Preparation
 
 ```{r}
 main_df <- read_csv("../Data/clean_data/main_df.csv", show_col_types = FALSE)
@@ -73,11 +73,11 @@ excl_mcheck <- c("588210", "40710", "848371")
 agg_df1 <- subset(agg_df,!(ID %in% outliers_rt))
 main_df1 <- subset(main_df, !(ID %in% outliers_rt))
 
-aov <- anova_test(data = agg_df1, RT_Raw ~ CL*Evaluation + Error(ID/(CL+Evaluation)), type =3,
+aov <- anova_test(data = agg_df1, RT_Raw ~ CL*Evaluation + Error(ID/1), type =3,
                   effect.size="pes")
 get_anova_table(aov)
 
-m4 <- lmer(scale(RT_Raw) ~ block + trial_block + CL+Evaluation + (CL+Evaluation|ID),
+m4 <- lmer(scale(RT_Raw) ~ block + trial_block + CL+Evaluation + (1|ID),
            data=main_df1, REML = T)
 summary(m4)
 ```
@@ -90,11 +90,11 @@ No differences in direction of the effect
 agg_df1 <- subset(agg_df,!(ID %in% excl_males))
 main_df1 <- subset(main_df, !(ID %in% excl_males))
 
-aov <- anova_test(data = agg_df1, RT_Raw ~ CL*Evaluation + Error(ID/(CL+Evaluation)), type =3,
+aov <- anova_test(data = agg_df1, RT_Raw ~ CL*Evaluation + Error(ID/1), type =3,
                   effect.size="pes")
 get_anova_table(aov)
 
-m4 <- lmer(scale(RT_Raw) ~ block + trial_block + CL+Evaluation + (CL+Evaluation|ID),
+m4 <- lmer(scale(RT_Raw) ~ block + trial_block + CL+Evaluation + (1|ID),
            data=main_df1, REML = T)
 summary(m4)
 ```
@@ -107,11 +107,11 @@ No differences in direction of the effect
 agg_df1 <- subset(agg_df,!(ID %in% excl_mcheck))
 main_df1 <- subset(main_df, !(ID %in% excl_mcheck))
 
-aov <- anova_test(data = agg_df1, RT_Raw ~ CL*Evaluation + Error(ID/(CL+Evaluation)), type =3,
+aov <- anova_test(data = agg_df1, RT_Raw ~ CL*Evaluation + Error(ID/1), type =3,
                   effect.size="pes")
 get_anova_table(aov)
 
-m4 <- lmer(scale(RT_Raw) ~ block + trial_block + CL+Evaluation + (CL+Evaluation|ID),
+m4 <- lmer(scale(RT_Raw) ~ block + trial_block + CL+Evaluation + (1|ID),
            data=main_df1, REML = T)
 summary(m4)
 ```
