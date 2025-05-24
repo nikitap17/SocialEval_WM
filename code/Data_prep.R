@@ -183,6 +183,9 @@ remove(s1n2b2,s1n3b2, s2n2b1,s2n3b1,
 
 setwd(proj_dir)
 
+performance_df$RT_Raw <- performance_df$RT_Raw * 1000
+
+
 write.csv(performance_df, "../Data/clean_data/Performance_clean.csv", row.names = F)
 for (i in id_list){rm(list = i)}
 
@@ -289,6 +292,7 @@ main_df <- inner_join(main_df, exp_3, by=c('ID',"CL","Evaluation", "block", "tri
 
 
 main_df$ID <- as.numeric(main_df$ID)
+main_df$RT_Raw <- round(main_df$RT_Raw, 0)
 
 
 ## Center values within participant (_cw) for better visualisations
@@ -404,6 +408,7 @@ agg_df2 <- main_df %>%
                    ~ mean(., na.rm = TRUE)))
 
 agg_df <- inner_join(agg_df, agg_df2, by=c('ID',"CL","Evaluation"))
+agg_df$RT_Raw <- round(agg_df$RT_Raw, 0)
 
 ## calculate the ratio score for eustress and distress
 agg_df$ratio <- agg_df$Eustress/agg_df$Distress
